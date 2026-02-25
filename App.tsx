@@ -22,8 +22,8 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex justify-center w-full">
-      <div className={`w-full max-w-md bg-white shadow-xl min-h-screen relative ${currentView === 'HOME' ? 'pb-10' : ''}`}>
+    <div className="h-screen bg-gray-100 flex items-center justify-center w-full overflow-hidden">
+      <div className="w-full h-full sm:h-[844px] sm:max-h-[95vh] sm:max-w-[390px] bg-white shadow-2xl flex flex-col relative sm:rounded-[2.5rem] sm:border-[8px] sm:border-gray-800 overflow-hidden">
         
         {/* Mobile Status Bar */}
         <StatusBar />
@@ -37,38 +37,40 @@ const App: React.FC = () => {
         />
 
         {currentView === 'HOME' && (
-          <>
-            <div className="relative">
+          <div className="flex flex-col flex-1 overflow-hidden">
+            <div className="relative flex-1 min-h-0">
               {/* Background Blue Extension */}
               <div className="absolute top-0 left-0 w-full h-16 bg-[#2ea2e6] z-0"></div>
 
               {/* Map Card */}
-              <div className="relative z-10">
+              <div className="relative z-10 h-full">
                 <MapSection />
               </div>
             </div>
 
             {/* Statistics Dashboard */}
-            <div className="mt-0">
+            <div className="mt-0 flex-none">
               <StatsDashboard />
             </div>
 
             {/* Menu Grid */}
-            <div className="mt-6 px-4">
+            <div className="mt-6 px-4 flex-none pb-6">
               <GridMenu onMenuClick={handleMenuClick} />
             </div>
 
             {/* Floating Chat Bubble (Bottom Right) */}
-            <div className="fixed bottom-24 right-4 z-50">
+            <div className="absolute bottom-6 right-4 z-50">
               <div className="bg-white p-2 rounded-full shadow-lg border border-gray-100">
                  <MessageCircleMore className="w-6 h-6 text-red-500" />
               </div>
             </div>
-          </>
+          </div>
         )}
 
         {currentView === 'IMS_QUERY' && (
-          <IMSQuery />
+          <div className="flex-1 overflow-y-auto">
+            <IMSQuery />
+          </div>
         )}
 
       </div>

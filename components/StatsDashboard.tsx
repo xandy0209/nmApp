@@ -8,8 +8,8 @@ const Separator = () => (
 const StatsDashboard: React.FC = () => {
   return (
     <div className="relative">
-      <div className="bg-[#4d86d6] text-white pt-2 pb-8 px-4">
-        <div className="grid grid-cols-5 gap-y-4 items-center">
+      <div className="bg-[#4d86d6] text-white pt-2 pb-8 px-2">
+        <div className="grid grid-cols-7 gap-y-4 items-center">
           
           {/* Row 1: Left Item (Special Line) */}
           <div className="col-span-1 text-center relative flex items-center justify-center h-full">
@@ -20,40 +20,33 @@ const StatsDashboard: React.FC = () => {
           {/* Row 1: Data Items */}
           <div className="col-span-1 text-center relative">
             <div className="text-xs text-blue-100 mb-1">开通</div>
-            <div className="text-xl font-bold">190</div>
+            <div className="text-lg font-bold">190</div>
             <Separator />
           </div>
           <div className="col-span-1 text-center relative">
             <div className="text-xs text-blue-100 mb-1">勘查</div>
-            <div className="text-xl font-bold">75</div>
+            <div className="text-lg font-bold">75</div>
             <Separator />
           </div>
           <div className="col-span-1 text-center relative">
             <div className="text-xs text-blue-100 mb-1">变更</div>
-            <div className="text-xl font-bold">410</div>
+            <div className="text-lg font-bold">410</div>
             <Separator />
           </div>
           <div className="col-span-1 text-center relative">
             <div className="text-xs text-blue-100 mb-1">故障</div>
-            <div className="text-xl font-bold">30</div>
-            {/* No separator for the last item */}
-          </div>
-
-          {/* Row 2: Left Item (Complaint) */}
-          <div className="col-span-1 text-center relative flex flex-col items-center justify-center h-full mt-2">
-            {/* Updated style to match '专线' (text-sm font-medium) */}
-            <div className="text-sm font-medium mb-1">投诉</div>
-            <div className="text-xl font-bold">120</div>
+            <div className="text-lg font-bold">30</div>
             <Separator />
           </div>
-
-          {/* Row 2: Data Items */}
-           <div className="col-span-1 text-center mt-2 relative">
-            {/* Updated style to match '专线' (text-sm font-medium) */}
-            <div className="text-sm font-medium mb-1">拆除</div>
-            <div className="text-xl font-bold">0</div>
+          <div className="col-span-1 text-center relative">
+            <div className="text-xs text-blue-100 mb-1">投诉</div>
+            <div className="text-lg font-bold">120</div>
+            <Separator />
           </div>
-           <div className="col-span-3"></div> {/* Spacer */}
+          <div className="col-span-1 text-center relative">
+            <div className="text-xs text-blue-100 mb-1">拆除</div>
+            <div className="text-lg font-bold">0</div>
+          </div>
 
         </div>
       </div>

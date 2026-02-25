@@ -112,16 +112,25 @@ const MapSection: React.FC = () => {
       myChart.resize();
     };
 
+    const resizeObserver = new ResizeObserver(() => {
+      handleResize();
+    });
+
+    if (chartRef.current) {
+      resizeObserver.observe(chartRef.current);
+    }
+
     window.addEventListener('resize', handleResize);
 
     return () => {
       window.removeEventListener('resize', handleResize);
+      resizeObserver.disconnect();
       myChart.dispose();
     };
   }, []);
 
   return (
-    <div className="mx-0 bg-white relative overflow-hidden h-72 border-b border-gray-100">
+    <div className="mx-0 bg-white relative overflow-hidden h-full border-b border-gray-100">
       {/* Loading Indicator */}
       {loading && (
         <div className="absolute inset-0 flex items-center justify-center bg-gray-50 z-20">
