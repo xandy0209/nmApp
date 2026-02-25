@@ -11,7 +11,7 @@ const MapSection: React.FC = () => {
     const myChart = echarts.init(chartRef.current);
 
     // Inner Mongolia GeoJSON URL (DataV Aliyun)
-    const geoJsonUrl = 'https://geo.datav.aliyun.com/areas_v3/bound/150000_full.json';
+    const geoJsonUrl = './150000_full.json';
 
     fetch(geoJsonUrl)
       .then((response) => response.json())
