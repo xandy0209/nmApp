@@ -1,0 +1,620 @@
+import React, { useState, useMemo } from 'react';
+import { FileText, Activity, Settings, MessageSquare, Clock, User, MapPin, ChevronDown, ChevronUp, ArrowLeft, Send, AlertCircle, Eye, Check, ChevronRight } from 'lucide-react';
+import { GroupOrderTaskRecord } from '../src/types/groupOrder';
+
+interface Props {
+  task: GroupOrderTaskRecord;
+}
+
+const InfoRow: React.FC<{ label: string; value: string | number | undefined }> = ({ label, value }) => (
+  <div className="flex justify-between items-center py-2 border-b border-gray-50 last:border-0">
+    <span className="text-gray-500 text-sm">{label}</span>
+    <span className="text-gray-900 text-sm font-medium text-right">{value || '-'}</span>
+  </div>
+);
+
+const WorkOrderDetailView: React.FC<{ workOrder: any; onBack: () => void }> = ({ workOrder, onBack }) => {
+  const [isBasicInfoExpanded, setIsBasicInfoExpanded] = useState(true);
+  const [isAnalysisInfoExpanded, setIsAnalysisInfoExpanded] = useState(false);
+
+  return (
+    <div className="flex flex-col h-full bg-gray-50 w-full relative">
+      <div className="bg-white p-4 border-b border-gray-200 flex items-center gap-3 sticky top-0 z-10">
+        <button onClick={onBack} className="text-gray-600">
+          <ArrowLeft size={20} />
+        </button>
+        <h2 className="font-bold text-gray-800 text-lg">工单详情</h2>
+      </div>
+
+      <div className="flex-1 overflow-y-auto p-4 pb-20">
+        {/* Basic Info */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-4">
+          <div 
+            className={`flex justify-between items-center cursor-pointer ${isBasicInfoExpanded ? 'mb-3' : ''}`}
+            onClick={() => setIsBasicInfoExpanded(!isBasicInfoExpanded)}
+          >
+            <h3 className="font-bold text-gray-800 border-l-4 border-[#2ea2e6] pl-2">工单基础信息</h3>
+            {isBasicInfoExpanded ? <ChevronUp size={20} className="text-gray-400" /> : <ChevronDown size={20} className="text-gray-400" />}
+          </div>
+          
+          {isBasicInfoExpanded && (
+            <div className="animate-fade-in">
+              <InfoRow label="CRM工单号" value={workOrder.id} />
+              <InfoRow label="工单标题" value={workOrder.title} />
+              <InfoRow label="状态" value={workOrder.status} />
+              <InfoRow label="工单来源" value={workOrder.source} />
+              <InfoRow label="业务类型" value={workOrder.businessType} />
+              <InfoRow label="业务标识" value={workOrder.businessId} />
+              <InfoRow label="区域" value={`${workOrder.city}-${workOrder.county}`} />
+              <InfoRow label="安装地址" value={workOrder.address} />
+              <InfoRow label="当前环节" value={workOrder.currentStage} />
+              <InfoRow label="分派交付经理" value={workOrder.manager} />
+            </div>
+          )}
+        </div>
+
+        {/* Analysis Info */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+          <div 
+            className={`flex justify-between items-center cursor-pointer ${isAnalysisInfoExpanded ? 'mb-3' : ''}`}
+            onClick={() => setIsAnalysisInfoExpanded(!isAnalysisInfoExpanded)}
+          >
+            <h3 className="font-bold text-gray-800 border-l-4 border-[#2ea2e6] pl-2">工单分析信息</h3>
+            {isAnalysisInfoExpanded ? <ChevronUp size={20} className="text-gray-400" /> : <ChevronDown size={20} className="text-gray-400" />}
+          </div>
+          
+          {isAnalysisInfoExpanded && (
+            <div className="animate-fade-in">
+              <InfoRow label="网络侧收单时间" value={workOrder.networkReceiptTime} />
+              <InfoRow label="抢单/受理时间" value={workOrder.acceptTime} />
+              <InfoRow label="抢单时长" value={workOrder.grabDuration} />
+              <InfoRow label="预约响应时长" value={workOrder.appointmentResponseDuration} />
+              <InfoRow label="预约时长" value={workOrder.appointmentDuration} />
+              <InfoRow label="预约交付时间" value={workOrder.appointmentDeliveryTime} />
+              <InfoRow label="预约次数" value={workOrder.appointmentCount} />
+              <InfoRow label="改约次数" value={workOrder.rescheduleCount} />
+              <InfoRow label="交付时限" value={workOrder.deliveryDeadline} />
+              <InfoRow label="完成时间" value={workOrder.completionTime} />
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Fixed Bottom Buttons */}
+      <div className="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-3 flex gap-3 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+        <button className="flex-1 flex flex-col items-center justify-center gap-1 text-gray-600 active:text-[#2ea2e6]">
+          <Send size={20} />
+          <span className="text-xs font-medium">发起支撑</span>
+        </button>
+        <button className="flex-1 flex flex-col items-center justify-center gap-1 text-gray-600 active:text-[#2ea2e6]">
+          <AlertCircle size={20} />
+          <span className="text-xs font-medium">催办</span>
+        </button>
+        <button className="flex-1 flex flex-col items-center justify-center gap-1 text-gray-600 active:text-[#2ea2e6]">
+          <Eye size={20} />
+          <span className="text-xs font-medium">查看轨迹</span>
+        </button>
+      </div>
+    </div>
+  );
+};
+
+const GroupTaskDetail: React.FC<Props> = ({ task }) => {
+  const [activeTab, setActiveTab] = useState('INFO');
+  const [woTab, setWoTab] = useState('ALL');
+  const [feedbackText, setFeedbackText] = useState('');
+  const [feedbacks, setFeedbacks] = useState([
+    { time: '2025-02-11 11:00:00', user: task.manager, content: '已联系施工队，准备进场。' },
+  ]);
+  const [taskStatus, setTaskStatus] = useState(task.status);
+
+  const [isBasicInfoExpanded, setIsBasicInfoExpanded] = useState(true);
+  const [isWorkOrderListExpanded, setIsWorkOrderListExpanded] = useState(false);
+  const [woFilterCRM, setWoFilterCRM] = useState('');
+  const [woFilterStatus, setWoFilterStatus] = useState('');
+  const [woFilterCity, setWoFilterCity] = useState('');
+  const [selectedWorkOrder, setSelectedWorkOrder] = useState<any>(null);
+
+  const [lastAppointmentTime, setLastAppointmentTime] = useState<string | null>(null);
+  const [appointmentStart, setAppointmentStart] = useState('');
+  const [appointmentEnd, setAppointmentEnd] = useState('');
+
+  const handleAppointment = () => {
+    if (appointmentStart && appointmentEnd) {
+      setLastAppointmentTime(`${appointmentStart.replace('T', ' ')} - ${appointmentEnd.replace('T', ' ')}`);
+      setAppointmentStart('');
+      setAppointmentEnd('');
+      alert('预约/改约成功');
+    } else {
+      alert('请选择开始和结束时间');
+    }
+  };
+
+  // Generate mock work orders based on task ID
+  const mockWorkOrders = useMemo(() => {
+    return [
+      { 
+        id: `${task.id}-WO-001`, 
+        title: `公安局节点接入`, 
+        status: '活动', 
+        manager: '李明(13800138000)', 
+        address: `新城区`, 
+        city: '呼和浩特市', 
+        county: '新城区', 
+        businessType: '互联网专线', 
+        businessId: 'YW-001', 
+        currentStage: '资源勘查', 
+        source: '家宽系统',
+        networkReceiptTime: '2025-02-10 09:00:00',
+        acceptTime: '2025-02-10 09:30:00',
+        grabDuration: '30分钟',
+        appointmentResponseDuration: '2小时',
+        appointmentDuration: '1天',
+        appointmentDeliveryTime: '2025-02-15 12:00:00',
+        appointmentCount: 1,
+        rescheduleCount: 0,
+        deliveryDeadline: '2025-02-20 18:00:00',
+        completionTime: '-'
+      },
+      { 
+        id: `${task.id}-WO-002`, 
+        title: '分局节点接入', 
+        status: '活动', 
+        manager: '王坤鹏(13900139000)', 
+        address: `昆都仑区`, 
+        city: '包头市', 
+        county: '昆都仑区', 
+        businessType: 'MPLS VPN', 
+        businessId: 'YW-002', 
+        currentStage: '光缆施工', 
+        source: '政企装维',
+        networkReceiptTime: '2025-02-11 10:00:00',
+        acceptTime: '2025-02-11 10:15:00',
+        grabDuration: '15分钟',
+        appointmentResponseDuration: '1小时',
+        appointmentDuration: '2天',
+        appointmentDeliveryTime: '2025-02-16 14:00:00',
+        appointmentCount: 2,
+        rescheduleCount: 1,
+        deliveryDeadline: '2025-02-21 18:00:00',
+        completionTime: '-'
+      },
+      { 
+        id: `${task.id}-WO-003`, 
+        title: '派出所节点接入', 
+        status: '历史', 
+        manager: '陈建国(13700137000)', 
+        address: `康巴什区`, 
+        city: '鄂尔多斯市', 
+        county: '康巴什区', 
+        businessType: '数字电路', 
+        businessId: 'YW-003', 
+        currentStage: '已竣工', 
+        source: '甩单系统',
+        networkReceiptTime: '2025-02-01 08:00:00',
+        acceptTime: '2025-02-01 08:05:00',
+        grabDuration: '5分钟',
+        appointmentResponseDuration: '30分钟',
+        appointmentDuration: '3天',
+        appointmentDeliveryTime: '2025-02-05 10:00:00',
+        appointmentCount: 1,
+        rescheduleCount: 0,
+        deliveryDeadline: '2025-02-10 18:00:00',
+        completionTime: '2025-02-08 15:30:00'
+      },
+      { 
+        id: `${task.id}-WO-004`, 
+        title: '监控点位接入', 
+        status: '撤单', 
+        manager: '杨丽(13600136000)', 
+        address: `赛罕区`, 
+        city: '呼和浩特市', 
+        county: '赛罕区', 
+        businessType: '互联网专线', 
+        businessId: 'YW-004', 
+        currentStage: '已撤单', 
+        source: '政企装维',
+        networkReceiptTime: '2025-02-12 11:00:00',
+        acceptTime: '2025-02-12 11:30:00',
+        grabDuration: '30分钟',
+        appointmentResponseDuration: '-',
+        appointmentDuration: '-',
+        appointmentDeliveryTime: '-',
+        appointmentCount: 0,
+        rescheduleCount: 0,
+        deliveryDeadline: '2025-02-22 18:00:00',
+        completionTime: '-'
+      },
+      { 
+        id: `${task.id}-WO-005`, 
+        title: '数据中心专线', 
+        status: '退单', 
+        manager: '周杰(13500135000)', 
+        address: `回民区`, 
+        city: '呼和浩特市', 
+        county: '回民区', 
+        businessType: '裸光纤', 
+        businessId: 'YW-005', 
+        currentStage: '已退单', 
+        source: '家宽系统',
+        networkReceiptTime: '2025-02-13 09:00:00',
+        acceptTime: '2025-02-13 09:10:00',
+        grabDuration: '10分钟',
+        appointmentResponseDuration: '1小时',
+        appointmentDuration: '-',
+        appointmentDeliveryTime: '-',
+        appointmentCount: 0,
+        rescheduleCount: 0,
+        deliveryDeadline: '2025-02-23 18:00:00',
+        completionTime: '-'
+      }
+    ];
+  }, [task]);
+
+  const currentStepIndex = useMemo(() => {
+    if (taskStatus === '待处理') return 1;
+    if (taskStatus === '处理中') return 2;
+    if (taskStatus === '已完成') return 3;
+    return 1;
+  }, [taskStatus]);
+
+  // Generate mock logs
+  const mockLogs = useMemo(() => {
+    const logs = [
+      { time: task.receiptTime, user: '系统', action: '任务分派', desc: '系统自动生成任务并下发' }
+    ];
+    if (taskStatus === '处理中' || taskStatus === '已完成') {
+      logs.push({ time: task.receiptTime, user: task.manager, action: '任务受理', desc: '交付经理确认受理' });
+    }
+    if (taskStatus === '已完成') {
+      logs.push({ time: task.receiptTime, user: '系统', action: '自动归档', desc: '任务处理完成，系统自动归档' });
+    }
+    return logs.reverse();
+  }, [taskStatus, task]);
+
+  const tabs = [
+    { id: 'INFO', label: '任务信息', icon: <FileText size={18} /> },
+    { id: 'PROCESS', label: '流程信息', icon: <Activity size={18} /> },
+    { id: 'ACTION', label: '任务处理', icon: <Settings size={18} /> },
+    { id: 'FEEDBACK', label: '阶段反馈', icon: <MessageSquare size={18} /> },
+  ];
+
+  const handleAccept = () => {
+    setTaskStatus('处理中');
+    alert('受理成功！');
+  };
+
+  const handleSubmitFeedback = () => {
+    if (!feedbackText.trim()) return;
+    setFeedbacks([{ time: new Date().toLocaleString(), user: '当前用户', content: feedbackText }, ...feedbacks]);
+    setFeedbackText('');
+  };
+
+  return (
+    <div className="relative h-full w-full">
+      {selectedWorkOrder && (
+        <div className="absolute inset-0 z-50 bg-gray-50">
+          <WorkOrderDetailView 
+            workOrder={selectedWorkOrder} 
+            onBack={() => setSelectedWorkOrder(null)} 
+          />
+        </div>
+      )}
+
+      <div className="flex flex-col h-full bg-gray-50 w-full">
+        {/* Tabs */}
+      <div className="bg-white flex border-b border-gray-200 shrink-0">
+        {tabs.map(tab => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className={`flex-1 py-3 text-xs font-medium flex flex-col items-center gap-1 relative ${
+              activeTab === tab.id ? 'text-[#2ea2e6]' : 'text-gray-500'
+            }`}
+          >
+            {tab.icon}
+            <span>{tab.label}</span>
+            {activeTab === tab.id && (
+              <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-[#2ea2e6] rounded-t-full"></div>
+            )}
+          </button>
+        ))}
+      </div>
+
+      {/* Content */}
+      <div className="flex-1 overflow-y-auto p-4">
+        
+        {/* INFO TAB */}
+        {activeTab === 'INFO' && (
+          <div className="space-y-4 animate-fade-in">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+              <div 
+                className={`flex justify-between items-center cursor-pointer ${isBasicInfoExpanded ? 'mb-3' : ''}`}
+                onClick={() => setIsBasicInfoExpanded(!isBasicInfoExpanded)}
+              >
+                <h3 className="font-bold text-gray-800 border-l-4 border-[#2ea2e6] pl-2">基本信息</h3>
+                {isBasicInfoExpanded ? <ChevronUp size={20} className="text-gray-400" /> : <ChevronDown size={20} className="text-gray-400" />}
+              </div>
+              
+              {isBasicInfoExpanded && (
+                <div className="animate-fade-in">
+                  <InfoRow label="任务状态" value={task.status} />
+                  <InfoRow label="交付经理" value={task.manager} />
+                  <InfoRow label="任务竣工率" value={task.rate} />
+                  <InfoRow label="在途/任务派单量" value={task.dispatchRatio} />
+                  <InfoRow label="任务剩余时限" value={task.remaining} />
+                  <InfoRow label="任务交付时限" value={task.deadline} />
+                  <InfoRow label="任务完成时间" value={task.finishTime} />
+                </div>
+              )}
+            </div>
+
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+              <div 
+                className={`flex justify-between items-center cursor-pointer ${isWorkOrderListExpanded ? 'mb-3' : ''}`}
+                onClick={() => setIsWorkOrderListExpanded(!isWorkOrderListExpanded)}
+              >
+                <h3 className="font-bold text-gray-800 border-l-4 border-[#2ea2e6] pl-2">工单清单</h3>
+                {isWorkOrderListExpanded ? <ChevronUp size={20} className="text-gray-400" /> : <ChevronDown size={20} className="text-gray-400" />}
+              </div>
+
+              {isWorkOrderListExpanded && (
+                <div className="animate-fade-in">
+                  <div className="space-y-2 mb-3">
+                    <input 
+                      type="text" 
+                      placeholder="CMR工单号、业务标识、工单标题、安装地址" 
+                      value={woFilterCRM}
+                      onChange={(e) => setWoFilterCRM(e.target.value)}
+                      className="w-full border border-gray-200 rounded-md p-2 text-xs bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-400"
+                    />
+                    <div className="grid grid-cols-2 gap-2">
+                      <select 
+                        value={woFilterStatus}
+                        onChange={(e) => setWoFilterStatus(e.target.value)}
+                        className="border border-gray-200 rounded-md p-2 text-xs bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-400"
+                      >
+                        <option value="">工单状态</option>
+                        <option value="活动">活动</option>
+                        <option value="历史">历史</option>
+                        <option value="撤单">撤单</option>
+                        <option value="退单">退单</option>
+                      </select>
+                      <select 
+                        value={woFilterCity}
+                        onChange={(e) => setWoFilterCity(e.target.value)}
+                        className="border border-gray-200 rounded-md p-2 text-xs bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-400"
+                      >
+                        <option value="">地市</option>
+                        <option value="呼和浩特市">呼和浩特市</option>
+                        <option value="包头市">包头市</option>
+                        <option value="鄂尔多斯市">鄂尔多斯市</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    {mockWorkOrders.filter(wo => {
+                      if (woFilterCRM) {
+                        const search = woFilterCRM.toLowerCase();
+                        if (
+                          !wo.id.toLowerCase().includes(search) && 
+                          !wo.title.toLowerCase().includes(search) &&
+                          !wo.businessId.toLowerCase().includes(search) &&
+                          !wo.address.toLowerCase().includes(search)
+                        ) return false;
+                      }
+                      if (woFilterStatus && wo.status !== woFilterStatus) return false;
+                      if (woFilterCity && wo.city !== woFilterCity) return false;
+                      return true;
+                    }).map(wo => (
+                      <div 
+                        key={wo.id} 
+                        className="border border-gray-100 rounded-lg p-3 bg-gray-50 flex flex-col gap-2 active:bg-gray-100 cursor-pointer transition-colors"
+                        onClick={() => setSelectedWorkOrder(wo)}
+                      >
+                        <div className="flex justify-between items-center">
+                          <span className="font-medium text-sm text-gray-800">CRM号：{wo.id}</span>
+                          <span className={`text-xs px-2 py-0.5 rounded ${
+                            wo.status === '活动' ? 'bg-blue-100 text-blue-600' : 
+                            wo.status === '历史' ? 'bg-gray-100 text-gray-600' :
+                            wo.status === '撤单' ? 'bg-red-100 text-red-600' :
+                            wo.status === '退单' ? 'bg-orange-100 text-orange-600' :
+                            wo.status === '待分派' ? 'bg-amber-100 text-amber-600' :
+                            'bg-gray-100 text-gray-600'
+                          }`}>{wo.status}</span>
+                        </div>
+                        <div className="text-xs text-gray-600">工单标题：{wo.title}</div>
+                        <div className="text-xs text-gray-500">安装地址：{wo.address}</div>
+                        <div className="text-xs text-gray-500">区域：{wo.city}-{wo.county}</div>
+                        <div className="text-xs text-gray-500">业务类型：{wo.businessType}</div>
+                        <div className="text-xs text-gray-500">业务标识：{wo.businessId}</div>
+                        <div className="text-xs text-gray-500">当前环节：{wo.currentStage}</div>
+                        <div className="text-xs text-gray-500">工单来源：{wo.source}</div>
+                        <div className="text-xs text-gray-500">分派交付经理：{wo.manager}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* PROCESS TAB */}
+        {activeTab === 'PROCESS' && (
+          <div className="space-y-4 animate-fade-in">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+              <h3 className="font-bold text-gray-800 mb-4 border-l-4 border-[#2ea2e6] pl-2">流程进度</h3>
+              <div className="flex items-center justify-between px-4">
+                {['分派', '受理', '完成'].map((step, idx, arr) => {
+                  const isCompleted = idx < currentStepIndex;
+                  const isCurrent = idx === currentStepIndex;
+                  const isLast = idx === arr.length - 1;
+                  
+                  return (
+                    <React.Fragment key={step}>
+                      {/* Step Node */}
+                      <div className="flex flex-col items-center relative z-10">
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold mb-1 transition-all duration-300
+                          ${isCompleted ? 'bg-[#2ea2e6] text-white shadow-md' : 
+                            isCurrent ? 'bg-white text-[#2ea2e6] border-2 border-[#2ea2e6] shadow-md scale-110' : 
+                            'bg-gray-200 text-gray-500'}`}>
+                          {isCompleted ? <Check size={16} strokeWidth={3} /> : idx + 1}
+                        </div>
+                        <span className={`text-xs font-medium transition-colors duration-300 ${isCompleted || isCurrent ? 'text-[#2ea2e6]' : 'text-gray-400'}`}>{step}</span>
+                      </div>
+
+                      {/* Connecting Line */}
+                      {!isLast && (
+                        <div className="flex-1 h-0.5 mx-2 relative bg-gray-200 self-start mt-[15px]">
+                          <div className={`absolute inset-0 transition-all duration-500 ${idx < currentStepIndex ? 'bg-[#2ea2e6] w-full' : 'w-0'}`}></div>
+                          {/* Arrow for active lines */}
+                          {idx < currentStepIndex && (
+                            <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 text-[#2ea2e6] z-20">
+                              <ChevronRight size={16} strokeWidth={3} />
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </React.Fragment>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+              <h3 className="font-bold text-gray-800 mb-3 border-l-4 border-[#2ea2e6] pl-2">操作记录</h3>
+              <div className="space-y-6 relative pl-4 before:absolute before:left-0 before:top-0 before:bottom-0 before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-gray-200 before:to-transparent">
+                {mockLogs.map((log, idx) => (
+                  <div key={idx} className="relative flex items-center gap-3">
+                    <div className="absolute -left-[21px] top-1/2 -translate-y-1/2 w-3 h-3 rounded-full border-2 border-white bg-[#2ea2e6] shadow z-10"></div>
+                    <div className="flex-1 bg-gray-50 p-3 rounded-lg border border-gray-100 shadow-sm">
+                      <div className="flex justify-between items-start mb-1">
+                        <span className="font-bold text-gray-800 text-sm">{log.action}</span>
+                        <span className="text-[10px] text-gray-400">{log.time}</span>
+                      </div>
+                      <div className="text-xs text-gray-500 mb-2 flex items-center gap-1">
+                        <span className="bg-blue-50 text-[#2ea2e6] px-1.5 py-0.5 rounded text-[10px]">{log.user}</span>
+                      </div>
+                      <div className="text-xs text-gray-600">{log.desc}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ACTION TAB */}
+        {activeTab === 'ACTION' && (
+          <div className="space-y-4 animate-fade-in">
+            {taskStatus === '待受理' ? (
+              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 flex flex-col items-center justify-center text-center">
+                <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mb-4">
+                  <FileText className="w-8 h-8 text-amber-500" />
+                </div>
+                <h3 className="text-lg font-bold text-gray-800 mb-2">任务待受理</h3>
+                <p className="text-sm text-gray-500 mb-6">请确认受理该任务后进行集中预约</p>
+                <button onClick={handleAccept} className="w-full bg-[#2ea2e6] text-white py-3 rounded-lg font-medium active:bg-blue-600 transition-colors">
+                  确认受理
+                </button>
+              </div>
+            ) : taskStatus === '已完成' ? (
+              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 flex flex-col items-center justify-center text-center">
+                <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mb-4">
+                  <Check className="w-8 h-8 text-emerald-500" />
+                </div>
+                <h3 className="text-lg font-bold text-gray-800 mb-2">任务已完成</h3>
+                <p className="text-sm text-gray-500">所有关联工单已处理完毕，任务自动归档。</p>
+              </div>
+            ) : (
+              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+                <h3 className="font-bold text-gray-800 mb-4 border-l-4 border-[#2ea2e6] pl-2">集中预约</h3>
+                <div className="space-y-3 mb-4">
+                  {lastAppointmentTime && (
+                    <div className="bg-blue-50 p-3 rounded-lg border border-blue-100 mb-4">
+                      <div className="text-xs text-blue-600 mb-1">上次预约时间</div>
+                      <div className="text-sm font-medium text-blue-800">{lastAppointmentTime}</div>
+                    </div>
+                  )}
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">开始时间</label>
+                    <input 
+                      type="datetime-local" 
+                      className="w-full border border-gray-200 rounded-md p-2 text-sm bg-gray-50" 
+                      value={appointmentStart}
+                      onChange={(e) => setAppointmentStart(e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">结束时间</label>
+                    <input 
+                      type="datetime-local" 
+                      className="w-full border border-gray-200 rounded-md p-2 text-sm bg-gray-50" 
+                      value={appointmentEnd}
+                      onChange={(e) => setAppointmentEnd(e.target.value)}
+                    />
+                  </div>
+                </div>
+                
+                <button 
+                  onClick={handleAppointment}
+                  className="w-full bg-[#2ea2e6] text-white py-2.5 rounded-lg font-medium text-sm active:bg-blue-600 transition-colors"
+                >
+                  确认预约 / 改约
+                </button>
+                <p className="text-xs text-gray-400 mt-3 text-center">操作提示：此操作将更新本次任务下所有关联工单的预约时间。请确保与客户沟通一致后再执行。</p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* FEEDBACK TAB */}
+        {activeTab === 'FEEDBACK' && (
+          <div className="space-y-4 animate-fade-in">
+            {taskStatus !== '待受理' && taskStatus !== '已完成' && (
+              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+                <h3 className="font-bold text-gray-800 mb-3 border-l-4 border-[#2ea2e6] pl-2">新增反馈</h3>
+                <textarea 
+                  value={feedbackText}
+                  onChange={(e) => setFeedbackText(e.target.value)}
+                  placeholder="请输入阶段反馈内容..."
+                  className="w-full border border-gray-200 rounded-lg p-3 text-sm bg-gray-50 min-h-[100px] focus:outline-none focus:ring-1 focus:ring-blue-400 mb-3"
+                ></textarea>
+                <button onClick={handleSubmitFeedback} className="w-full bg-[#2ea2e6] text-white py-2.5 rounded-lg font-medium text-sm active:bg-blue-600 transition-colors">
+                  提交反馈
+                </button>
+              </div>
+            )}
+
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+              <h3 className="font-bold text-gray-800 mb-3 border-l-4 border-[#2ea2e6] pl-2">反馈记录</h3>
+              {taskStatus === '待受理' ? (
+                <div className="py-8 text-center text-gray-400 text-sm">
+                  暂无反馈记录
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {feedbacks.map((fb, idx) => (
+                    <div key={idx} className="border-b border-gray-100 last:border-0 pb-3 last:pb-0">
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="font-medium text-sm text-gray-800 flex items-center gap-1"><User size={14}/> {fb.user}</span>
+                        <span className="text-xs text-gray-400 flex items-center gap-1"><Clock size={12}/> {fb.time}</span>
+                      </div>
+                      <p className="text-sm text-gray-600 bg-gray-50 p-2 rounded-md mt-2">{fb.content}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+      </div>
+      </div>
+    </div>
+  );
+};
+
+export default GroupTaskDetail;

@@ -99,6 +99,9 @@ const IMSQuery: React.FC = () => {
             )}
           </button>
         </div>
+        <div className="text-xs text-gray-400 mt-2">
+          必须以区号开头，区号+7位固话号码的方式录入，例如：04718403913
+        </div>
       </div>
 
       {/* Loading Indicator in Content Area */}

@@ -12,7 +12,8 @@ import {
   Clock,
   Briefcase,
   Activity,
-  Search
+  Search,
+  Layers
 } from 'lucide-react';
 
 interface MenuItemProps {
@@ -25,7 +26,7 @@ interface MenuItemProps {
 const MenuItem: React.FC<MenuItemProps> = ({ icon, label, colorClass, onClick }) => {
   return (
     <div 
-      className="flex flex-col items-center justify-start space-y-2 p-2 active:opacity-70 transition-opacity cursor-pointer"
+      className="flex flex-col items-center justify-start space-y-1 p-1 active:opacity-70 transition-opacity cursor-pointer"
       onClick={onClick}
     >
       <div className={`w-10 h-10 ${colorClass} rounded-lg flex items-center justify-center`}>
@@ -57,11 +58,13 @@ const GridMenu: React.FC<GridMenuProps> = ({ onMenuClick }) => {
     { label: "集中预约", icon: <Clock />, color: "text-red-400 bg-red-50" },
     { label: "通用工单", icon: <Briefcase />, color: "text-orange-400 bg-orange-50" },
     { label: "拨测管理", icon: <FileText />, color: "text-emerald-500 bg-emerald-50" },
-    { label: "IMS固话查询", icon: <Search />, color: "text-purple-500 bg-purple-50" },
+    { label: "IMS固话查询", icon: <Search />, color: "text-blue-500 bg-blue-50" },
+    
+    { label: "团单管理", icon: <Layers />, color: "text-red-400 bg-red-50" },
   ];
 
   return (
-    <div className="grid grid-cols-4 gap-x-2 gap-y-6 pt-4">
+    <div className="grid grid-cols-4 gap-x-2 gap-y-4 pt-2">
       {items.map((item, index) => (
         <MenuItem 
           key={index}

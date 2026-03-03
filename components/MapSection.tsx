@@ -70,7 +70,9 @@ const MapSection: React.FC = () => {
               type: 'map',
               map: 'neimenggu',
               roam: true, // Enable Zoom and Drag
-              zoom: 1.2, // Initial Zoom
+              zoom: 1.0, // Reduced zoom so it fits
+              top: 20, // Add top padding
+              bottom: 30, // Add bottom padding to avoid overlap
               label: {
                 show: true,
                 formatter: (params: any) => {
@@ -109,11 +111,16 @@ const MapSection: React.FC = () => {
       });
 
     const handleResize = () => {
-      myChart.resize();
+      if (myChart && !myChart.isDisposed()) {
+        myChart.resize();
+      }
     };
 
     const resizeObserver = new ResizeObserver(() => {
-      handleResize();
+      // Ensure container has dimensions before resizing
+      if (chartRef.current && chartRef.current.clientWidth > 0 && chartRef.current.clientHeight > 0) {
+        handleResize();
+      }
     });
 
     if (chartRef.current) {
@@ -125,7 +132,9 @@ const MapSection: React.FC = () => {
     return () => {
       window.removeEventListener('resize', handleResize);
       resizeObserver.disconnect();
-      myChart.dispose();
+      if (myChart && !myChart.isDisposed()) {
+        myChart.dispose();
+      }
     };
   }, []);
 
@@ -142,7 +151,7 @@ const MapSection: React.FC = () => {
       <div ref={chartRef} className="w-full h-full" />
 
       {/* Legend Note Bottom Right */}
-      <div className="absolute bottom-2 right-4 text-xs text-gray-400 pointer-events-none z-10 bg-white/50 px-1 rounded">
+      <div className="absolute bottom-8 right-2 text-[10px] text-gray-500 pointer-events-none z-10 bg-white/80 px-1.5 py-0.5 rounded shadow-sm">
         显示说明： 客户量/业务量
       </div>
     </div>
