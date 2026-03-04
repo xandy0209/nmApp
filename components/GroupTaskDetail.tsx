@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { FileText, Activity, Settings, MessageSquare, Clock, User, MapPin, ChevronDown, ChevronUp, ArrowLeft, Send, AlertCircle, Eye, Check, ChevronRight } from 'lucide-react';
+import { FileText, Activity, Settings, MessageSquare, Clock, User, MapPin, ChevronDown, ChevronUp, ArrowLeft, Send, AlertCircle, Eye, Check, ChevronRight, X } from 'lucide-react';
 import { GroupOrderTaskRecord } from '../src/types/groupOrder';
 
 interface Props {
@@ -13,20 +13,204 @@ const InfoRow: React.FC<{ label: string; value: string | number | undefined }> =
   </div>
 );
 
+const SupportRequestView: React.FC<{ workOrder: any; onBack: () => void }> = ({ workOrder, onBack }) => {
+  const [subject, setSubject] = useState('');
+  const [content, setContent] = useState('');
+  const [deadline, setDeadline] = useState('');
+  const [assigneeCategory, setAssigneeCategory] = useState('');
+  const [assignee, setAssignee] = useState('');
+
+  const [isBarsVisible, setIsBarsVisible] = useState(true);
+  const lastScrollY = React.useRef(0);
+
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const currentScrollY = e.currentTarget.scrollTop;
+    
+    if (currentScrollY > lastScrollY.current + 5 && currentScrollY > 50) {
+      setIsBarsVisible(false);
+    } else if (currentScrollY < lastScrollY.current - 5 || currentScrollY <= 0) {
+      setIsBarsVisible(true);
+    }
+    
+    lastScrollY.current = currentScrollY;
+  };
+
+  const assigneeOptions = useMemo(() => {
+    if (assigneeCategory === '分公司客响') {
+      return [
+        { id: 'kr1', name: `张三（${workOrder.city}客响）` },
+        { id: 'kr2', name: `李四（${workOrder.city}客响）` },
+      ];
+    } else if (assigneeCategory === '交付经理') {
+      return [
+        { id: 'dm1', name: `王五（网格交付经理）` },
+        { id: 'dm2', name: `赵六（旗县交付经理）` },
+        { id: 'dm3', name: `孙七（分公司交付经理）` },
+        { id: 'dm4', name: `周八（区公司交付经理）` },
+      ];
+    }
+    return [];
+  }, [assigneeCategory, workOrder.city, workOrder.county]);
+
+  const handleSubmit = () => {
+    if (!subject || !content || !deadline || !assigneeCategory || !assignee) {
+      alert('请填写所有必填项');
+      return;
+    }
+    alert('支撑单提交成功！');
+    onBack();
+  };
+
+  return (
+    <div className="flex flex-col h-full bg-gray-50 w-full relative overflow-hidden">
+      <div 
+        className={`absolute top-0 left-0 right-0 bg-white p-4 border-b border-gray-200 flex items-center gap-3 z-20 transition-transform duration-300 ease-in-out ${
+          isBarsVisible ? 'translate-y-0' : '-translate-y-full'
+        }`}
+      >
+        <button onClick={onBack} className="text-gray-600">
+          <ArrowLeft size={20} />
+        </button>
+        <h2 className="font-bold text-gray-800 text-lg">发起支撑</h2>
+      </div>
+
+      <div 
+        className="flex-1 overflow-y-auto p-4 pb-24 pt-20"
+        onScroll={handleScroll}
+      >
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              <span className="text-red-500 mr-1">*</span>支撑主题
+            </label>
+            <input 
+              type="text" 
+              value={subject}
+              onChange={(e) => setSubject(e.target.value)}
+              placeholder="请输入支撑主题"
+              className="w-full border border-gray-200 rounded-md p-2 text-sm bg-gray-50 focus:outline-none focus:ring-1 focus:ring-[#2ea2e6]"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              <span className="text-red-500 mr-1">*</span>支撑内容
+            </label>
+            <textarea 
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              placeholder="请输入支撑内容"
+              rows={4}
+              className="w-full border border-gray-200 rounded-md p-2 text-sm bg-gray-50 focus:outline-none focus:ring-1 focus:ring-[#2ea2e6]"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              <span className="text-red-500 mr-1">*</span>处理时限
+            </label>
+            <input 
+              type="datetime-local" 
+              value={deadline}
+              onChange={(e) => setDeadline(e.target.value)}
+              className="w-full border border-gray-200 rounded-md p-2 text-sm bg-gray-50 focus:outline-none focus:ring-1 focus:ring-[#2ea2e6]"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              <span className="text-red-500 mr-1">*</span>指派对象分类
+            </label>
+            <select 
+              value={assigneeCategory}
+              onChange={(e) => {
+                setAssigneeCategory(e.target.value);
+                setAssignee(''); // Reset assignee when category changes
+              }}
+              className="w-full border border-gray-200 rounded-md p-2 text-sm bg-gray-50 focus:outline-none focus:ring-1 focus:ring-[#2ea2e6]"
+            >
+              <option value="">请选择</option>
+              <option value="分公司客响">分公司客响</option>
+              <option value="交付经理">交付经理</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              <span className="text-red-500 mr-1">*</span>指派对象
+            </label>
+            <select 
+              value={assignee}
+              onChange={(e) => setAssignee(e.target.value)}
+              disabled={!assigneeCategory}
+              className="w-full border border-gray-200 rounded-md p-2 text-sm bg-gray-50 focus:outline-none focus:ring-1 focus:ring-[#2ea2e6] disabled:opacity-50"
+            >
+              <option value="">请选择</option>
+              {assigneeOptions.map(opt => (
+                <option key={opt.id} value={opt.id}>{opt.name}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div 
+        className={`absolute bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-20 transition-transform duration-300 ease-in-out ${
+          isBarsVisible ? 'translate-y-0' : 'translate-y-full'
+        }`}
+      >
+        <button 
+          onClick={handleSubmit}
+          className="w-full bg-[#2ea2e6] text-white py-3 rounded-lg font-medium active:bg-blue-600 transition-colors"
+        >
+          提交
+        </button>
+      </div>
+    </div>
+  );
+};
+
 const WorkOrderDetailView: React.FC<{ workOrder: any; onBack: () => void }> = ({ workOrder, onBack }) => {
   const [isBasicInfoExpanded, setIsBasicInfoExpanded] = useState(true);
   const [isAnalysisInfoExpanded, setIsAnalysisInfoExpanded] = useState(false);
+  const [showSupportRequest, setShowSupportRequest] = useState(false);
+
+  const [isBarsVisible, setIsBarsVisible] = useState(true);
+  const lastScrollY = React.useRef(0);
+
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const currentScrollY = e.currentTarget.scrollTop;
+    
+    if (currentScrollY > lastScrollY.current + 5 && currentScrollY > 50) {
+      setIsBarsVisible(false);
+    } else if (currentScrollY < lastScrollY.current - 5 || currentScrollY <= 0) {
+      setIsBarsVisible(true);
+    }
+    
+    lastScrollY.current = currentScrollY;
+  };
+
+  if (showSupportRequest) {
+    return <SupportRequestView workOrder={workOrder} onBack={() => setShowSupportRequest(false)} />;
+  }
 
   return (
-    <div className="flex flex-col h-full bg-gray-50 w-full relative">
-      <div className="bg-white p-4 border-b border-gray-200 flex items-center gap-3 sticky top-0 z-10">
+    <div className="flex flex-col h-full bg-gray-50 w-full relative overflow-hidden">
+      <div 
+        className={`absolute top-0 left-0 right-0 bg-white p-4 border-b border-gray-200 flex items-center gap-3 z-20 transition-transform duration-300 ease-in-out ${
+          isBarsVisible ? 'translate-y-0' : '-translate-y-full'
+        }`}
+      >
         <button onClick={onBack} className="text-gray-600">
           <ArrowLeft size={20} />
         </button>
         <h2 className="font-bold text-gray-800 text-lg">工单详情</h2>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4 pb-20">
+      <div 
+        className="flex-1 overflow-y-auto p-4 pb-24 pt-20"
+        onScroll={handleScroll}
+      >
         {/* Basic Info */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-4">
           <div 
@@ -81,8 +265,15 @@ const WorkOrderDetailView: React.FC<{ workOrder: any; onBack: () => void }> = ({
       </div>
 
       {/* Fixed Bottom Buttons */}
-      <div className="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-3 flex gap-3 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
-        <button className="flex-1 flex flex-col items-center justify-center gap-1 text-gray-600 active:text-[#2ea2e6]">
+      <div 
+        className={`absolute bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-3 flex gap-3 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-20 transition-transform duration-300 ease-in-out ${
+          isBarsVisible ? 'translate-y-0' : 'translate-y-full'
+        }`}
+      >
+        <button 
+          onClick={() => setShowSupportRequest(true)}
+          className="flex-1 flex flex-col items-center justify-center gap-1 text-gray-600 active:text-[#2ea2e6]"
+        >
           <Send size={20} />
           <span className="text-xs font-medium">发起支撑</span>
         </button>
@@ -105,6 +296,9 @@ const GroupTaskDetail: React.FC<Props> = ({ task }) => {
   const [feedbackText, setFeedbackText] = useState('');
   const [feedbacks, setFeedbacks] = useState([
     { time: '2025-02-11 11:00:00', user: task.manager, content: '已联系施工队，准备进场。' },
+    { time: '2025-02-11 14:30:00', user: task.manager, content: '施工队已到达现场，开始布线。' },
+    { time: '2025-02-12 09:15:00', user: task.manager, content: '布线完成，正在进行设备调试。' },
+    { time: '2025-02-12 16:00:00', user: task.manager, content: '设备调试遇到小问题，预计明天上午解决。' },
   ]);
   const [taskStatus, setTaskStatus] = useState(task.status);
 
@@ -114,6 +308,21 @@ const GroupTaskDetail: React.FC<Props> = ({ task }) => {
   const [woFilterStatus, setWoFilterStatus] = useState('');
   const [woFilterCity, setWoFilterCity] = useState('');
   const [selectedWorkOrder, setSelectedWorkOrder] = useState<any>(null);
+
+  const [isTabBarVisible, setIsTabBarVisible] = useState(true);
+  const lastScrollY = React.useRef(0);
+
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const currentScrollY = e.currentTarget.scrollTop;
+    
+    if (currentScrollY > lastScrollY.current + 5 && currentScrollY > 50) {
+      setIsTabBarVisible(false);
+    } else if (currentScrollY < lastScrollY.current - 5 || currentScrollY <= 0) {
+      setIsTabBarVisible(true);
+    }
+    
+    lastScrollY.current = currentScrollY;
+  };
 
   const [lastAppointmentTime, setLastAppointmentTime] = useState<string | null>(null);
   const [appointmentStart, setAppointmentStart] = useState('');
@@ -301,9 +510,13 @@ const GroupTaskDetail: React.FC<Props> = ({ task }) => {
         </div>
       )}
 
-      <div className="flex flex-col h-full bg-gray-50 w-full">
+      <div className="flex flex-col h-full bg-gray-50 w-full relative overflow-hidden">
         {/* Tabs */}
-      <div className="bg-white flex border-b border-gray-200 shrink-0">
+      <div 
+        className={`absolute top-0 left-0 right-0 z-10 bg-white flex border-b border-gray-200 transition-transform duration-300 ease-in-out ${
+          isTabBarVisible ? 'translate-y-0' : '-translate-y-full'
+        }`}
+      >
         {tabs.map(tab => (
           <button
             key={tab.id}
@@ -322,7 +535,10 @@ const GroupTaskDetail: React.FC<Props> = ({ task }) => {
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto p-4">
+      <div 
+        className={`flex-1 overflow-y-auto p-4 transition-all duration-300 ${isTabBarVisible ? 'mt-[65px]' : 'mt-0'}`}
+        onScroll={handleScroll}
+      >
         
         {/* INFO TAB */}
         {activeTab === 'INFO' && (
@@ -338,7 +554,7 @@ const GroupTaskDetail: React.FC<Props> = ({ task }) => {
               
               {isBasicInfoExpanded && (
                 <div className="animate-fade-in">
-                  <InfoRow label="任务状态" value={task.status} />
+                  <InfoRow label="任务状态" value={task.status === '撤单' ? '已撤单' : task.status} />
                   <InfoRow label="交付经理" value={task.manager} />
                   <InfoRow label="任务竣工率" value={task.rate} />
                   <InfoRow label="在途/任务派单量" value={task.dispatchRatio} />
@@ -528,6 +744,14 @@ const GroupTaskDetail: React.FC<Props> = ({ task }) => {
                 <h3 className="text-lg font-bold text-gray-800 mb-2">任务已完成</h3>
                 <p className="text-sm text-gray-500">所有关联工单已处理完毕，任务自动归档。</p>
               </div>
+            ) : taskStatus === '撤单' ? (
+              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 flex flex-col items-center justify-center text-center">
+                <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
+                  <X className="w-8 h-8 text-red-500" />
+                </div>
+                <h3 className="text-lg font-bold text-gray-800 mb-2">任务已撤单</h3>
+                <p className="text-sm text-gray-500">该任务已被撤销，流程已终止。无法进行受理、预约或回单操作。</p>
+              </div>
             ) : (
               <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
                 <h3 className="font-bold text-gray-800 mb-4 border-l-4 border-[#2ea2e6] pl-2">集中预约</h3>
@@ -562,7 +786,7 @@ const GroupTaskDetail: React.FC<Props> = ({ task }) => {
                   onClick={handleAppointment}
                   className="w-full bg-[#2ea2e6] text-white py-2.5 rounded-lg font-medium text-sm active:bg-blue-600 transition-colors"
                 >
-                  确认预约 / 改约
+                  {lastAppointmentTime ? '确认改约' : '确认预约'}
                 </button>
                 <p className="text-xs text-gray-400 mt-3 text-center">操作提示：此操作将更新本次任务下所有关联工单的预约时间。请确保与客户沟通一致后再执行。</p>
               </div>
@@ -573,7 +797,7 @@ const GroupTaskDetail: React.FC<Props> = ({ task }) => {
         {/* FEEDBACK TAB */}
         {activeTab === 'FEEDBACK' && (
           <div className="space-y-4 animate-fade-in">
-            {taskStatus !== '待受理' && taskStatus !== '已完成' && (
+            {taskStatus !== '待受理' && taskStatus !== '已完成' && taskStatus !== '撤单' && (
               <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
                 <h3 className="font-bold text-gray-800 mb-3 border-l-4 border-[#2ea2e6] pl-2">新增反馈</h3>
                 <textarea 

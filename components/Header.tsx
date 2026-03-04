@@ -6,9 +6,10 @@ interface HeaderProps {
   showBack?: boolean;
   showRightIcon?: boolean;
   onBack?: () => void;
+  rightContent?: React.ReactNode;
 }
 
-const Header: React.FC<HeaderProps> = ({ title = "首页", showBack = false, showRightIcon = true, onBack }) => {
+const Header: React.FC<HeaderProps> = ({ title = "首页", showBack = false, showRightIcon = true, onBack, rightContent }) => {
   return (
     <header className="bg-[#2ea2e6] text-white px-4 py-3 flex items-center justify-between sticky top-0 z-50 shadow-md">
       {/* Back Button or Placeholder */}
@@ -25,7 +26,7 @@ const Header: React.FC<HeaderProps> = ({ title = "首页", showBack = false, sho
       <h1 className="text-xl font-medium tracking-wide">{title}</h1>
       
       <div className="w-6 flex justify-end">
-        {showRightIcon && <Mail className="w-6 h-6" />}
+        {rightContent ? rightContent : (showRightIcon && <Mail className="w-6 h-6" />)}
       </div>
     </header>
   );

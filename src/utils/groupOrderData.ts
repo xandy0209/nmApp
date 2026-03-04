@@ -108,12 +108,24 @@ export const generateGroupOrderTaskData = (orders: GroupOrderRecord[]): GroupOrd
         // Generate 1-3 tasks per order
         const count = Math.floor(Math.random() * 3) + 1;
         for (let i = 0; i < count; i++) {
+            let taskStatus = '处理中';
+            if (order.status === '待受理') taskStatus = '待受理';
+            else if (order.status === '已完成') taskStatus = '已完成';
+            else if (order.status === '撤单') taskStatus = '撤单';
+            else {
+                // For other order statuses, mix of statuses
+                const rand = Math.random();
+                if (rand > 0.7) taskStatus = '已完成';
+                else if (rand > 0.6) taskStatus = '撤单'; // Add some random cancelled tasks
+                else taskStatus = '处理中';
+            }
+
             tasks.push({
                 id: `${order.id}-0${i+1}`,
                 taskId: `${order.groupOrderId}-0${i+1}`,
                 name: `${order.name}-任务${i+1}`,
                 groupOrderName: order.name,
-                status: order.status === '待受理' ? '待受理' : (order.status === '已完成' ? '已完成' : (Math.random() > 0.5 ? '处理中' : '已完成')),
+                status: taskStatus,
                 manager: order.manager,
                 rate: order.completionRate,
                 dispatchRatio: order.inflightDispatched,

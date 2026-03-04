@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { Star } from 'lucide-react';
 import Header from './components/Header';
 import MapSection from './components/MapSection';
 import StatsDashboard from './components/StatsDashboard';
@@ -13,8 +14,9 @@ import { generateGroupOrderData, generateGroupOrderTaskData, generateDeliveryMan
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<'HOME' | 'IMS_QUERY' | 'GROUP_ORDER' | 'GROUP_ORDER_DETAIL' | 'GROUP_TASK_DETAIL'>('HOME');
   const [selectedId, setSelectedId] = useState<string>('');
+  const [favoritedOrders, setFavoritedOrders] = useState<string[]>([]);
 
-  // Generate data once
+  // Generate data once (force refresh for mock data)
   const orders = useMemo(() => generateGroupOrderData(20), []);
   const tasks = useMemo(() => generateGroupOrderTaskData(orders), [orders]);
   const managers = useMemo(() => generateDeliveryManagerData(15), []);
@@ -59,6 +61,28 @@ const App: React.FC = () => {
   const selectedOrder = useMemo(() => orders.find(o => o.id === selectedId), [orders, selectedId]);
   const selectedTask = useMemo(() => tasks.find(t => t.id === selectedId), [tasks, selectedId]);
 
+  const toggleFavorite = () => {
+    if (selectedOrder) {
+      setFavoritedOrders(prev => 
+        prev.includes(selectedOrder.id) 
+          ? prev.filter(id => id !== selectedOrder.id)
+          : [...prev, selectedOrder.id]
+      );
+    }
+  };
+
+  const renderRightContent = () => {
+    if (currentView === 'GROUP_ORDER_DETAIL' && selectedOrder) {
+      const isFavorited = favoritedOrders.includes(selectedOrder.id);
+      return (
+        <button onClick={toggleFavorite} className="p-1">
+          <Star size={20} className={isFavorited ? "fill-yellow-400 text-yellow-400" : "text-white"} />
+        </button>
+      );
+    }
+    return undefined;
+  };
+
   return (
     <div className="h-screen bg-gray-100 flex items-center justify-center w-full overflow-hidden">
       <div className="w-full h-full sm:h-[844px] sm:max-h-[95vh] sm:max-w-[390px] bg-white shadow-2xl flex flex-col relative sm:rounded-[2.5rem] sm:border-[8px] sm:border-gray-800 overflow-hidden">
@@ -72,6 +96,7 @@ const App: React.FC = () => {
           showBack={currentView !== 'HOME'}
           showRightIcon={currentView === 'HOME'}
           onBack={handleBack}
+          rightContent={renderRightContent()}
         />
 
         {/* Main Content Area */}

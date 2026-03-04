@@ -3,7 +3,7 @@ import { Search, Filter, ChevronRight, ChevronLeft, Clock, User, Activity, Alert
 import { GroupOrderRecord, GroupOrderTaskRecord, DeliveryManagerRecord } from '../src/types/groupOrder';
 
 const orderTabs = ['全部', '收藏', '待受理', '处理中', '待回单', '已完成', '撤单'];
-const taskTabs = ['全部', '待受理', '处理中', '已完成'];
+const taskTabs = ['全部', '待受理', '处理中', '已完成', '已撤单'];
 const managerTabs = ['全部', '省级', '地市级', '旗县级', '网格级'];
 
 const INNER_MONGOLIA_CITIES = [
@@ -113,9 +113,8 @@ const GroupOrderManagement: React.FC<GroupOrderManagementProps> = ({ onItemClick
     setMainTab(tab);
     setActiveStatusTab('全部');
     setSearchQuery('');
-    if (tab !== 'TASKS') {
-      setTaskFilterOrderId(null);
-    }
+    setTaskFilterOrderId(null); // Always reset drill-down filter when clicking top tabs
+    
     if (tab !== 'MANAGERS') {
       setManagerCityFilter('');
       setManagerCountyFilter('');
@@ -140,7 +139,7 @@ const GroupOrderManagement: React.FC<GroupOrderManagementProps> = ({ onItemClick
       const matchesCounty = !managerCountyFilter || item.county === managerCountyFilter;
       return matchesTab && matchesSearch && matchesCity && matchesCounty;
     } else if (mainTab === 'TASKS') {
-      const matchesTab = activeStatusTab === '全部' || item.status === activeStatusTab;
+      const matchesTab = activeStatusTab === '全部' || item.status === activeStatusTab || (activeStatusTab === '已撤单' && item.status === '撤单');
       const matchesSearch = item.id.includes(searchQuery) || item.taskId.includes(searchQuery) || item.groupOrderName.includes(searchQuery) || item.groupOrderId.includes(searchQuery);
       const matchesOrder = !taskFilterOrderId || item.groupOrderId === taskFilterOrderId;
       return matchesTab && matchesSearch && matchesOrder;
@@ -442,7 +441,7 @@ const GroupOrderManagement: React.FC<GroupOrderManagementProps> = ({ onItemClick
                     <span className="text-sm font-medium text-gray-900">{mainTab === 'ORDERS' ? item.groupOrderId : item.taskId}</span>
                   </div>
                   <span className={`text-xs px-2 py-0.5 rounded border ${getStatusColor(item.status)}`}>
-                    {item.status}
+                    {item.status === '撤单' ? '已撤单' : item.status}
                   </span>
                 </div>
                 
@@ -518,13 +517,28 @@ const GroupOrderManagement: React.FC<GroupOrderManagementProps> = ({ onItemClick
                           <span className="text-xs text-gray-500">在途/派单量:</span>
                           <span className="text-xs text-gray-800">{item.dispatchRatio}</span>
                         </div>
-                        <div className="flex items-center space-x-1.5">
-                          <AlertCircle className="w-3.5 h-3.5 text-gray-400" />
-                          <span className="text-xs text-gray-500">剩余时限:</span>
-                          <span className={`text-xs font-medium ${item.remaining === '-' ? 'text-gray-800' : 'text-red-500'}`}>
-                            {item.remaining}
-                          </span>
-                        </div>
+                            {item.status === '撤单' ? (
+                              <>
+                                <div className="flex items-center space-x-1.5">
+                                  <Clock className="w-3.5 h-3.5 text-gray-400" />
+                                  <span className="text-xs text-gray-500">撤单时间:</span>
+                                  <span className="text-xs text-gray-800">{item.finishTime || '-'}</span>
+                                </div>
+                                <div className="flex items-center space-x-1.5">
+                                  <AlertCircle className="w-3.5 h-3.5 text-gray-400" />
+                                  <span className="text-xs text-gray-500">撤单原因:</span>
+                                  <span className="text-xs text-gray-800">客户需求变更</span>
+                                </div>
+                              </>
+                            ) : (
+                          <div className="flex items-center space-x-1.5">
+                            <AlertCircle className="w-3.5 h-3.5 text-gray-400" />
+                            <span className="text-xs text-gray-500">剩余时限:</span>
+                            <span className={`text-xs font-medium ${item.remaining === '-' ? 'text-gray-800' : 'text-red-500'}`}>
+                              {item.remaining}
+                            </span>
+                          </div>
+                        )}
                       </div>
                       <div className="border-t border-gray-200 pt-2 flex items-center space-x-1.5">
                         <User className="w-3.5 h-3.5 text-gray-400" />
