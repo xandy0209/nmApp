@@ -170,10 +170,176 @@ const SupportRequestView: React.FC<{ workOrder: any; onBack: () => void }> = ({ 
   );
 };
 
+const UrgeView: React.FC<{ workOrder: any; onBack: () => void }> = ({ workOrder, onBack }) => {
+  const [activeTab, setActiveTab] = useState<'RECORD' | 'CREATE'>('RECORD');
+  const [urgeRecords, setUrgeRecords] = useState([
+    { time: '2025-02-12 10:00:00', urger: '张三', target: '李四', content: '请尽快处理工单' },
+    { time: '2025-02-11 15:30:00', urger: '王五', target: '赵六', content: '客户催促，请优先处理' },
+  ]);
+
+  const [targets, setTargets] = useState([{ name: '', phone: '' }]);
+  const [content, setContent] = useState('');
+
+  const handleAddTarget = () => {
+    setTargets([...targets, { name: '', phone: '' }]);
+  };
+
+  const handleRemoveTarget = (index: number) => {
+    const newTargets = [...targets];
+    newTargets.splice(index, 1);
+    setTargets(newTargets);
+  };
+
+  const handleTargetChange = (index: number, field: 'name' | 'phone', value: string) => {
+    const newTargets = [...targets];
+    newTargets[index][field] = value;
+    setTargets(newTargets);
+  };
+
+  const handleSubmit = () => {
+    if (targets.some(t => !t.name || !t.phone) || !content) {
+      alert('请填写完整的催办对象和催办内容');
+      return;
+    }
+    
+    const newRecords = targets.map(target => ({
+      time: new Date().toLocaleString(),
+      urger: '当前用户',
+      target: `${target.name}(${target.phone})`,
+      content: content
+    }));
+
+    setUrgeRecords([...newRecords, ...urgeRecords]);
+    setActiveTab('RECORD');
+    setContent('');
+    setTargets([{ name: '', phone: '' }]);
+    alert('催办成功！');
+  };
+
+  return (
+    <div className="flex flex-col h-full bg-gray-50 w-full relative overflow-hidden">
+      <div className="absolute top-0 left-0 right-0 bg-white p-4 border-b border-gray-200 flex items-center gap-3 z-20">
+        <button onClick={onBack} className="text-gray-600">
+          <ArrowLeft size={20} />
+        </button>
+        <h2 className="font-bold text-gray-800 text-lg">支撑催办</h2>
+      </div>
+
+      <div className="flex border-b border-gray-200 bg-white mt-[60px]">
+        <button
+          className={`flex-1 py-3 text-sm font-medium ${activeTab === 'RECORD' ? 'text-[#2ea2e6] border-b-2 border-[#2ea2e6]' : 'text-gray-500'}`}
+          onClick={() => setActiveTab('RECORD')}
+        >
+          催办记录
+        </button>
+        <button
+          className={`flex-1 py-3 text-sm font-medium ${activeTab === 'CREATE' ? 'text-[#2ea2e6] border-b-2 border-[#2ea2e6]' : 'text-gray-500'}`}
+          onClick={() => setActiveTab('CREATE')}
+        >
+          发起催办
+        </button>
+      </div>
+
+      <div className="flex-1 overflow-y-auto p-4 pb-24">
+        {activeTab === 'RECORD' ? (
+          <div className="space-y-4">
+            {urgeRecords.map((record, index) => (
+              <div key={index} className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-xs text-gray-500">{record.time}</span>
+                  <span className="text-xs font-medium text-[#2ea2e6] bg-blue-50 px-2 py-1 rounded-full">{record.urger}</span>
+                </div>
+                <div className="space-y-2">
+                  <div className="text-sm text-gray-800"><span className="text-gray-500">催办对象：</span>{record.target}</div>
+                  <div className="text-sm text-gray-800"><span className="text-gray-500">催办内容：</span>{record.content}</div>
+                </div>
+              </div>
+            ))}
+            {urgeRecords.length === 0 && (
+              <div className="text-center text-gray-400 py-8 text-sm">暂无催办记录</div>
+            )}
+          </div>
+        ) : (
+          <div className="space-y-4">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="font-bold text-gray-800 border-l-4 border-[#2ea2e6] pl-2">催办对象</h3>
+                <button onClick={handleAddTarget} className="text-xs text-[#2ea2e6] font-medium flex items-center gap-1">
+                  + 添加对象
+                </button>
+              </div>
+              
+              <div className="space-y-4">
+                {targets.map((target, index) => (
+                  <div key={index} className="bg-gray-50 p-3 rounded-lg relative">
+                    {targets.length > 1 && (
+                      <button 
+                        onClick={() => handleRemoveTarget(index)}
+                        className="absolute top-2 right-2 text-gray-400 hover:text-red-500"
+                      >
+                        <X size={16} />
+                      </button>
+                    )}
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs text-gray-500 mb-1">姓名</label>
+                        <input
+                          type="text"
+                          value={target.name}
+                          onChange={(e) => handleTargetChange(index, 'name', e.target.value)}
+                          className="w-full border border-gray-200 rounded-md p-2 text-sm bg-white"
+                          placeholder="请输入姓名"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs text-gray-500 mb-1">电话</label>
+                        <input
+                          type="tel"
+                          value={target.phone}
+                          onChange={(e) => handleTargetChange(index, 'phone', e.target.value)}
+                          className="w-full border border-gray-200 rounded-md p-2 text-sm bg-white"
+                          placeholder="请输入电话"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+              <h3 className="font-bold text-gray-800 border-l-4 border-[#2ea2e6] pl-2 mb-4">催办内容</h3>
+              <textarea
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                className="w-full border border-gray-200 rounded-md p-2 text-sm bg-gray-50 min-h-[100px]"
+                placeholder="请输入催办内容..."
+              />
+            </div>
+          </div>
+        )}
+      </div>
+
+      {activeTab === 'CREATE' && (
+        <div className="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-20">
+          <button 
+            onClick={handleSubmit}
+            className="w-full bg-[#2ea2e6] text-white py-3 rounded-lg font-medium active:bg-blue-600 transition-colors"
+          >
+            提交催办
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
+
 const WorkOrderDetailView: React.FC<{ workOrder: any; onBack: () => void }> = ({ workOrder, onBack }) => {
   const [isBasicInfoExpanded, setIsBasicInfoExpanded] = useState(true);
   const [isAnalysisInfoExpanded, setIsAnalysisInfoExpanded] = useState(false);
+  const [isHistoryExpanded, setIsHistoryExpanded] = useState(false);
   const [showSupportRequest, setShowSupportRequest] = useState(false);
+  const [showUrgeView, setShowUrgeView] = useState(false);
 
   const [isBarsVisible, setIsBarsVisible] = useState(true);
   const lastScrollY = React.useRef(0);
@@ -190,8 +356,19 @@ const WorkOrderDetailView: React.FC<{ workOrder: any; onBack: () => void }> = ({
     lastScrollY.current = currentScrollY;
   };
 
+  // Mock data for processing history
+  const historyRecords = [
+    { stage: '资源勘查', type: '回单', operator: '李明', phone: '13800138000', time: '2025-02-10 14:30:00', desc: '现场勘查完成，资源具备。' },
+    { stage: '资源勘查', type: '接单', operator: '李明', phone: '13800138000', time: '2025-02-10 09:30:00', desc: '已接单，准备前往现场。' },
+    { stage: '待分派', type: '分派', operator: '系统', phone: '-', time: '2025-02-10 09:00:00', desc: '系统自动分派工单。' },
+  ];
+
   if (showSupportRequest) {
     return <SupportRequestView workOrder={workOrder} onBack={() => setShowSupportRequest(false)} />;
+  }
+
+  if (showUrgeView) {
+    return <UrgeView workOrder={workOrder} onBack={() => setShowUrgeView(false)} />;
   }
 
   return (
@@ -238,7 +415,7 @@ const WorkOrderDetailView: React.FC<{ workOrder: any; onBack: () => void }> = ({
         </div>
 
         {/* Analysis Info */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-4">
           <div 
             className={`flex justify-between items-center cursor-pointer ${isAnalysisInfoExpanded ? 'mb-3' : ''}`}
             onClick={() => setIsAnalysisInfoExpanded(!isAnalysisInfoExpanded)}
@@ -262,13 +439,43 @@ const WorkOrderDetailView: React.FC<{ workOrder: any; onBack: () => void }> = ({
             </div>
           )}
         </div>
+
+        {/* Processing History */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+          <div 
+            className={`flex justify-between items-center cursor-pointer ${isHistoryExpanded ? 'mb-3' : ''}`}
+            onClick={() => setIsHistoryExpanded(!isHistoryExpanded)}
+          >
+            <h3 className="font-bold text-gray-800 border-l-4 border-[#2ea2e6] pl-2">工单处理过程</h3>
+            {isHistoryExpanded ? <ChevronUp size={20} className="text-gray-400" /> : <ChevronDown size={20} className="text-gray-400" />}
+          </div>
+          
+          {isHistoryExpanded && (
+            <div className="animate-fade-in space-y-6 relative pl-4 before:absolute before:left-0 before:top-0 before:bottom-0 before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-gray-200 before:to-transparent">
+              {historyRecords.map((record, index) => (
+                <div key={index} className="relative">
+                  <div className="absolute -left-[21px] top-2 w-3 h-3 rounded-full border-2 border-white bg-[#2ea2e6] shadow z-10"></div>
+                  <div className="flex justify-between items-start mb-1">
+                    <span className="font-bold text-gray-800 text-sm">{record.stage}</span>
+                    <span className="text-xs text-gray-500">{record.time}</span>
+                  </div>
+                  <div className="text-xs text-gray-600 mb-1">
+                    <span className="bg-blue-50 text-[#2ea2e6] px-1.5 py-0.5 rounded mr-2">{record.type}</span>
+                    <span>{record.operator} ({record.phone})</span>
+                  </div>
+                  <div className="text-sm text-gray-700 bg-gray-50 p-2 rounded">
+                    {record.desc}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Fixed Bottom Buttons */}
       <div 
-        className={`absolute bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-3 flex gap-3 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-20 transition-transform duration-300 ease-in-out ${
-          isBarsVisible ? 'translate-y-0' : 'translate-y-full'
-        }`}
+        className="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-3 flex gap-3 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-20"
       >
         <button 
           onClick={() => setShowSupportRequest(true)}
@@ -277,13 +484,12 @@ const WorkOrderDetailView: React.FC<{ workOrder: any; onBack: () => void }> = ({
           <Send size={20} />
           <span className="text-xs font-medium">发起支撑</span>
         </button>
-        <button className="flex-1 flex flex-col items-center justify-center gap-1 text-gray-600 active:text-[#2ea2e6]">
+        <button 
+          className="flex-1 flex flex-col items-center justify-center gap-1 text-gray-600 active:text-[#2ea2e6]"
+          onClick={() => setShowUrgeView(true)}
+        >
           <AlertCircle size={20} />
           <span className="text-xs font-medium">催办</span>
-        </button>
-        <button className="flex-1 flex flex-col items-center justify-center gap-1 text-gray-600 active:text-[#2ea2e6]">
-          <Eye size={20} />
-          <span className="text-xs font-medium">查看轨迹</span>
         </button>
       </div>
     </div>
