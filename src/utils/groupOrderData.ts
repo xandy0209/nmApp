@@ -49,10 +49,16 @@ export const generateGroupOrderData = (count: number): GroupOrderRecord[] => {
         const deliveryDeadline = deadlineDate.toISOString().replace('T', ' ').substring(0, 19);
 
         let completionTime = '';
+        let returnOrderTime = '';
         if (status === '已完成') {
             const compDate = new Date(receiptDate);
             compDate.setDate(compDate.getDate() + 2);
             completionTime = compDate.toISOString().replace('T', ' ').substring(0, 19);
+            
+            // Return time is slightly after completion time
+            const returnDate = new Date(compDate);
+            returnDate.setMinutes(returnDate.getMinutes() + 45);
+            returnOrderTime = returnDate.toISOString().replace('T', ' ').substring(0, 19);
         }
 
         const remainingDays = (Math.random() * 5 + 1).toFixed(2);
@@ -94,6 +100,7 @@ export const generateGroupOrderData = (count: number): GroupOrderRecord[] => {
             receiptTime,
             deliveryDeadline: (status === '撤单') ? '-' : deliveryDeadline,
             completionTime,
+            returnOrderTime,
             city,
             county,
             groupOrderId: `BN-20260210-${(1000 + i).toString().slice(1)}`
@@ -148,11 +155,20 @@ export const generateDeliveryManagerData = (count: number): DeliveryManagerRecor
         "吴敏", "郑伟", "钱芳", "孙强", "张彦飞", "武楠", "额力苏", "侯峰", "王晓强"
     ];
     const companies = ["内蒙古移动", "呼和浩特移动", "包头移动", "赤峰移动", "通辽移动", "鄂尔多斯移动"];
+    const jurisdictionTypes = ['专线', '宽带', '终端'];
 
     for (let i = 0; i < count; i++) {
         const cityObj = INNER_MONGOLIA_CITIES[Math.floor(Math.random() * INNER_MONGOLIA_CITIES.length)];
         const level = levels[i % levels.length];
         
+        // Randomly select 1-3 jurisdiction types for non-provincial managers
+        const jurisdiction: string[] = [];
+        if (level !== '省级') {
+            const numTypes = Math.floor(Math.random() * 3) + 1;
+            const shuffled = [...jurisdictionTypes].sort(() => 0.5 - Math.random());
+            jurisdiction.push(...shuffled.slice(0, numTypes));
+        }
+
         data.push({
             id: `dm-${i}`,
             name: names[i % names.length],
@@ -161,7 +177,8 @@ export const generateDeliveryManagerData = (count: number): DeliveryManagerRecor
             city: level === '省级' ? '全区' : cityObj.name,
             count: Math.floor(Math.random() * 50),
             grid: level === '网格级' ? `${cityObj.name}网格${i}` : '-',
-            company: companies[i % companies.length]
+            company: companies[i % companies.length],
+            jurisdiction: jurisdiction
         });
     }
     return data;

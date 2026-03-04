@@ -47,6 +47,9 @@ const ManagerList: React.FC<ManagerListProps> = ({ data }) => {
           </div>
           <div className="bg-gray-50 rounded-lg p-3 grid grid-cols-2 gap-y-2 gap-x-4">
             <div className="text-xs text-gray-500 flex justify-between">
+              <span>管辖:</span> <span className="text-gray-800 font-medium">{(item.jurisdiction && item.jurisdiction.length > 0) ? item.jurisdiction.join('、') : '-'}</span>
+            </div>
+            <div className="text-xs text-gray-500 flex justify-between">
               <span>地市:</span> <span className="text-gray-800 font-medium">{item.city}</span>
             </div>
             <div className="text-xs text-gray-500 flex justify-between">

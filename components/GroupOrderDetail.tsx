@@ -940,6 +940,7 @@ const GroupOrderDetail: React.FC<Props> = ({ order }) => {
                   <InfoRow label="收单时间" value={order.receiptTime} />
                   <InfoRow label="交付时限" value={order.deliveryDeadline} />
                   <InfoRow label="完成时间" value={order.completionTime} />
+                  <InfoRow label="回单时间" value={orderStatus === '已完成' ? (order.returnOrderTime || order.completionTime) : '-'} />
                 </div>
               )}
             </div>

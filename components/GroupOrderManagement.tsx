@@ -71,6 +71,11 @@ const GroupOrderManagement: React.FC<GroupOrderManagementProps> = ({ onItemClick
   
   // Manager State
   const [managers, setManagers] = useState(initialManagers);
+
+  useEffect(() => {
+    setManagers(initialManagers);
+  }, [initialManagers]);
+
   const [managerCityFilter, setManagerCityFilter] = useState('');
   const [managerCountyFilter, setManagerCountyFilter] = useState('');
   const [localOrders, setLocalOrders] = useState(orders);
@@ -83,7 +88,8 @@ const GroupOrderManagement: React.FC<GroupOrderManagementProps> = ({ onItemClick
     city: '',
     county: '',
     grid: '',
-    company: ''
+    company: '',
+    jurisdiction: []
   });
 
   // Task Filter State (Drill Down)
@@ -208,14 +214,17 @@ const GroupOrderManagement: React.FC<GroupOrderManagementProps> = ({ onItemClick
 
     if (level === '地市级') {
         if (!city) errors.push('地市');
+        if (!newManagerForm.jurisdiction || newManagerForm.jurisdiction.length === 0) errors.push('管辖');
     } else if (level === '旗县级') {
         if (!city) errors.push('地市');
         if (!county) errors.push('旗县');
+        if (!newManagerForm.jurisdiction || newManagerForm.jurisdiction.length === 0) errors.push('管辖');
     } else if (level === '网格级') {
         if (!city) errors.push('地市');
         if (!county) errors.push('旗县');
         if (!grid) errors.push('网格');
         if (!company) errors.push('代维公司');
+        if (!newManagerForm.jurisdiction || newManagerForm.jurisdiction.length === 0) errors.push('管辖');
     }
 
     if (errors.length > 0) {
@@ -404,6 +413,7 @@ const GroupOrderManagement: React.FC<GroupOrderManagementProps> = ({ onItemClick
                 </div>
                 <div className="bg-gray-50 rounded-lg p-2 flex flex-col gap-1">
                   <div className="grid grid-cols-2 gap-x-2 gap-y-1">
+                    <div className="text-xs text-gray-500 truncate">管辖: <span className="text-gray-800">{(item.jurisdiction && item.jurisdiction.length > 0) ? item.jurisdiction.join('、') : '-'}</span></div>
                     <div className="text-xs text-gray-500 truncate">地市: <span className="text-gray-800">{item.city || '-'}</span></div>
                     <div className="text-xs text-gray-500 truncate">旗县: <span className="text-gray-800">{item.county || '-'}</span></div>
                     <div className="text-xs text-gray-500 truncate">网格: <span className="text-gray-800">{item.grid || '-'}</span></div>
@@ -614,7 +624,8 @@ const GroupOrderManagement: React.FC<GroupOrderManagementProps> = ({ onItemClick
                         city: ['省级'].includes(lvl) ? '' : prev.city,
                         county: ['省级', '地市级'].includes(lvl) ? '' : prev.county,
                         grid: lvl !== '网格级' ? '' : prev.grid,
-                        company: lvl !== '网格级' ? '' : prev.company
+                        company: lvl !== '网格级' ? '' : prev.company,
+                        jurisdiction: lvl === '省级' ? [] : prev.jurisdiction || []
                     }));
                   }}
                   className="flex-1 border border-gray-200 rounded-lg p-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-400"
@@ -627,6 +638,36 @@ const GroupOrderManagement: React.FC<GroupOrderManagementProps> = ({ onItemClick
                 </select>
                 <span className="text-red-500">*</span>
               </div>
+
+              {newManagerForm.level && newManagerForm.level !== '省级' && (
+                <div className="flex items-start gap-3">
+                  <label className="w-16 text-right text-sm text-gray-600 mt-2">管辖</label>
+                  <div className="flex-1 flex gap-4 mt-2">
+                    {['专线', '宽带', '终端'].map(type => (
+                      <label key={type} className="flex items-center gap-1 text-sm text-gray-700 cursor-pointer">
+                        <input 
+                          type="checkbox"
+                          checked={(newManagerForm.jurisdiction || []).includes(type)}
+                          onChange={(e) => {
+                            const checked = e.target.checked;
+                            setNewManagerForm(prev => {
+                              const current = prev.jurisdiction || [];
+                              if (checked) {
+                                return { ...prev, jurisdiction: [...current, type] };
+                              } else {
+                                return { ...prev, jurisdiction: current.filter(t => t !== type) };
+                              }
+                            });
+                          }}
+                          className="rounded text-blue-500 focus:ring-blue-400"
+                        />
+                        {type}
+                      </label>
+                    ))}
+                  </div>
+                  <span className="text-red-500 mt-2">*</span>
+                </div>
+              )}
 
               {['地市级', '旗县级', '网格级'].includes(newManagerForm.level || '') && (
                 <div className="flex items-center gap-3">

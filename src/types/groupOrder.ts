@@ -14,6 +14,7 @@ export interface GroupOrderRecord {
   receiptTime: string; // 网络侧收单时间
   deliveryDeadline: string; // 交付时限
   completionTime: string; // 完成时间
+  returnOrderTime?: string; // 回单时间
   groupOrderId?: string; // 团单标识号
   city?: string; // 地市
   county?: string; // 旗县
@@ -28,6 +29,7 @@ export interface DeliveryManagerRecord {
   count: number;
   grid?: string;
   company?: string;
+  jurisdiction?: string[];
 }
 
 export interface GroupOrderTaskRecord {

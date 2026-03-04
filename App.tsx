@@ -19,7 +19,8 @@ const App: React.FC = () => {
   // Generate data once (force refresh for mock data)
   const orders = useMemo(() => generateGroupOrderData(20), []);
   const tasks = useMemo(() => generateGroupOrderTaskData(orders), [orders]);
-  const managers = useMemo(() => generateDeliveryManagerData(15), []);
+  // Use a unique key to force regeneration of managers data
+  const managers = useMemo(() => generateDeliveryManagerData(15), [orders]);
 
   const handleMenuClick = (label: string) => {
     if (label === 'IMS固话查询') {
