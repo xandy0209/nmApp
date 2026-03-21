@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { FileText, Activity, Settings, MessageSquare, Clock, User, MapPin, ChevronDown, ChevronUp, ArrowLeft, Send, AlertCircle, Eye, Check, ChevronRight, X } from 'lucide-react';
-import { GroupOrderTaskRecord } from '../src/types/groupOrder';
+import { GroupOrderTaskRecord } from '@/src/types/groupOrder';
 
 interface Props {
   task: GroupOrderTaskRecord;

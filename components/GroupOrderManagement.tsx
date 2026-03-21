@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Search, Filter, ChevronRight, ChevronLeft, Clock, User, Activity, AlertCircle, CheckCircle2, Star, FileText, Plus, X, Trash2, Edit2 } from 'lucide-react';
-import { GroupOrderRecord, GroupOrderTaskRecord, DeliveryManagerRecord } from '../src/types/groupOrder';
+import { GroupOrderRecord, GroupOrderTaskRecord, DeliveryManagerRecord } from '@/src/types/groupOrder';
 
 const orderTabs = ['全部', '收藏', '待受理', '处理中', '待回单', '已完成', '撤单'];
 const taskTabs = ['全部', '待受理', '处理中', '已完成', '已撤单'];

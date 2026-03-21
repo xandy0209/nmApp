@@ -9,10 +9,13 @@ import IMSQuery from './components/IMSQuery';
 import GroupOrderManagement from './components/GroupOrderManagement';
 import GroupOrderDetail from './components/GroupOrderDetail';
 import GroupTaskDetail from './components/GroupTaskDetail';
+import ComplaintSupport from './components/ComplaintSupport';
+import ComplaintDetail from './components/ComplaintDetail';
 import { generateGroupOrderData, generateGroupOrderTaskData, generateDeliveryManagerData } from './src/utils/groupOrderData';
+import { generateComplaintData } from './src/utils/complaintData';
 
 const App: React.FC = () => {
-  const [currentView, setCurrentView] = useState<'HOME' | 'IMS_QUERY' | 'GROUP_ORDER' | 'GROUP_ORDER_DETAIL' | 'GROUP_TASK_DETAIL'>('HOME');
+  const [currentView, setCurrentView] = useState<'HOME' | 'IMS_QUERY' | 'GROUP_ORDER' | 'GROUP_ORDER_DETAIL' | 'GROUP_TASK_DETAIL' | 'COMPLAINT_SUPPORT' | 'COMPLAINT_DETAIL'>('HOME');
   const [selectedId, setSelectedId] = useState<string>('');
   const [favoritedOrders, setFavoritedOrders] = useState<string[]>([]);
 
@@ -21,12 +24,20 @@ const App: React.FC = () => {
   const tasks = useMemo(() => generateGroupOrderTaskData(orders), [orders]);
   // Use a unique key to force regeneration of managers data
   const managers = useMemo(() => generateDeliveryManagerData(15), [orders]);
+  
+  const [complaints, setComplaints] = useState(() => generateComplaintData(15));
+
+  const handleUpdateComplaint = (id: string, updates: Partial<any>) => {
+    setComplaints(prev => prev.map(c => c.id === id ? { ...c, ...updates } : c));
+  };
 
   const handleMenuClick = (label: string) => {
     if (label === 'IMS固话查询') {
       setCurrentView('IMS_QUERY');
     } else if (label === '团单管理') {
       setCurrentView('GROUP_ORDER');
+    } else if (label === '投诉支撑' || label === '投诉' || label === '投诉跟踪反馈') {
+      setCurrentView('COMPLAINT_SUPPORT');
     }
     // Handle other menu items if needed
   };
@@ -34,6 +45,8 @@ const App: React.FC = () => {
   const handleBack = () => {
     if (currentView === 'GROUP_ORDER_DETAIL' || currentView === 'GROUP_TASK_DETAIL') {
       setCurrentView('GROUP_ORDER');
+    } else if (currentView === 'COMPLAINT_DETAIL') {
+      setCurrentView('COMPLAINT_SUPPORT');
     } else {
       setCurrentView('HOME');
     }
@@ -55,12 +68,15 @@ const App: React.FC = () => {
       case 'GROUP_ORDER': return '团单管理';
       case 'GROUP_ORDER_DETAIL': return '团单详情';
       case 'GROUP_TASK_DETAIL': return '任务详情';
+      case 'COMPLAINT_SUPPORT': return '投诉支撑';
+      case 'COMPLAINT_DETAIL': return '投诉详情';
       default: return '首页';
     }
   };
 
   const selectedOrder = useMemo(() => orders.find(o => o.id === selectedId), [orders, selectedId]);
   const selectedTask = useMemo(() => tasks.find(t => t.id === selectedId), [tasks, selectedId]);
+  const selectedComplaint = useMemo(() => complaints.find(c => c.id === selectedId), [complaints, selectedId]);
 
   const toggleFavorite = () => {
     if (selectedOrder) {
@@ -118,7 +134,7 @@ const App: React.FC = () => {
 
               {/* Statistics Dashboard */}
               <div className="shrink-0 mt-[-20px] relative z-20">
-                <StatsDashboard />
+                <StatsDashboard onStatClick={handleMenuClick} />
               </div>
 
               {/* Menu Grid */}
@@ -161,6 +177,35 @@ const App: React.FC = () => {
           {currentView === 'GROUP_TASK_DETAIL' && selectedTask && (
             <div className="absolute inset-0 z-20 bg-gray-50 flex flex-col overflow-y-auto">
               <GroupTaskDetail task={selectedTask} />
+            </div>
+          )}
+
+          {/* Complaint Support - Keep mounted to preserve state and scroll position */}
+          {(currentView === 'COMPLAINT_SUPPORT' || currentView === 'COMPLAINT_DETAIL') && (
+            <div 
+              className="absolute inset-0 z-10 bg-gray-50 flex flex-col overflow-y-auto"
+              style={{ 
+                visibility: currentView === 'COMPLAINT_SUPPORT' ? 'visible' : 'hidden',
+                zIndex: currentView === 'COMPLAINT_SUPPORT' ? 10 : 0
+              }}
+            >
+              <ComplaintSupport 
+                complaints={complaints} 
+                onItemClick={(id) => {
+                  setSelectedId(id);
+                  setCurrentView('COMPLAINT_DETAIL');
+                }}
+              />
+            </div>
+          )}
+
+          {currentView === 'COMPLAINT_DETAIL' && selectedComplaint && (
+            <div className="absolute inset-0 z-20 bg-gray-50 flex flex-col overflow-y-auto">
+              <ComplaintDetail 
+                complaint={selectedComplaint} 
+                onBack={() => setCurrentView('COMPLAINT_SUPPORT')}
+                onUpdateComplaint={handleUpdateComplaint}
+              />
             </div>
           )}
         </div>

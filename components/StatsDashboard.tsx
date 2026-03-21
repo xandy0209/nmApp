@@ -1,11 +1,15 @@
 import React from 'react';
 
 // Helper component for the vertical separator
-const Separator = () => (
+const Separator: React.FC = () => (
   <div className="absolute right-0 top-1/2 -translate-y-1/2 h-1/3 w-[1px] bg-blue-200/40"></div>
 );
 
-const StatsDashboard: React.FC = () => {
+interface StatsDashboardProps {
+  onStatClick?: (label: string) => void;
+}
+
+const StatsDashboard: React.FC<StatsDashboardProps> = ({ onStatClick }) => {
   return (
     <div className="relative">
       <div className="bg-[#4d86d6] text-white pt-2 pb-6 px-2 shadow-md">
@@ -13,39 +17,42 @@ const StatsDashboard: React.FC = () => {
           
           {/* Row 1: Left Item (Special Line) */}
           <div className="col-span-1 text-center relative flex items-center justify-center h-full">
-            <span className="text-xs font-medium">专线</span>
+            <span className="font-medium" style={{ fontSize: '14px' }}>专线</span>
             <Separator />
           </div>
 
           {/* Row 1: Data Items */}
           <div className="col-span-1 text-center relative">
-            <div className="text-[10px] text-blue-100 mb-0.5">开通</div>
-            <div className="text-base font-bold">190</div>
+            <div className="text-blue-100 mb-0.5" style={{ fontSize: '14px' }}>开通</div>
+            <div className="font-bold" style={{ fontSize: '14px' }}>190</div>
             <Separator />
           </div>
           <div className="col-span-1 text-center relative">
-            <div className="text-[10px] text-blue-100 mb-0.5">勘查</div>
-            <div className="text-base font-bold">75</div>
+            <div className="text-blue-100 mb-0.5" style={{ fontSize: '14px' }}>勘查</div>
+            <div className="font-bold" style={{ fontSize: '14px' }}>75</div>
             <Separator />
           </div>
           <div className="col-span-1 text-center relative">
-            <div className="text-[10px] text-blue-100 mb-0.5">变更</div>
-            <div className="text-base font-bold">410</div>
+            <div className="text-blue-100 mb-0.5" style={{ fontSize: '14px' }}>变更</div>
+            <div className="font-bold" style={{ fontSize: '14px' }}>410</div>
             <Separator />
           </div>
           <div className="col-span-1 text-center relative">
-            <div className="text-[10px] text-blue-100 mb-0.5">故障</div>
-            <div className="text-base font-bold">30</div>
+            <div className="text-blue-100 mb-0.5" style={{ fontSize: '14px' }}>故障</div>
+            <div className="font-bold" style={{ fontSize: '14px' }}>30</div>
+            <Separator />
+          </div>
+          <div 
+            className="col-span-1 text-center relative cursor-pointer active:opacity-70"
+            onClick={() => onStatClick && onStatClick('投诉')}
+          >
+            <div className="text-blue-100 mb-0.5" style={{ fontSize: '14px' }}>投诉</div>
+            <div className="font-bold" style={{ fontSize: '14px' }}>120</div>
             <Separator />
           </div>
           <div className="col-span-1 text-center relative">
-            <div className="text-[10px] text-blue-100 mb-0.5">投诉</div>
-            <div className="text-base font-bold">120</div>
-            <Separator />
-          </div>
-          <div className="col-span-1 text-center relative">
-            <div className="text-[10px] text-blue-100 mb-0.5">拆除</div>
-            <div className="text-base font-bold">0</div>
+            <div className="text-blue-100 mb-0.5" style={{ fontSize: '14px' }}>拆除</div>
+            <div className="font-bold" style={{ fontSize: '14px' }}>0</div>
           </div>
 
         </div>
@@ -57,7 +64,7 @@ const StatsDashboard: React.FC = () => {
             {/* The trapezoid shape created via borders or background clip. Using SVG for precision. */}
             <svg width="160" height="24" viewBox="0 0 160 24" className="drop-shadow-sm">
                 <path d="M0,0 L16,24 L144,24 L160,0 Z" fill="#4d86d6" />
-                <text x="80" y="16" fontSize="11" fill="white" textAnchor="middle" fontWeight="500">运维工单</text>
+                <text x="80" y="16" fontSize="14" fill="white" textAnchor="middle" fontWeight="500">运维工单</text>
             </svg>
         </div>
       </div>
