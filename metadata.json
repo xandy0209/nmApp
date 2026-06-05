@@ -1,5 +1,6 @@
 {
   "name": "NM_APP",
   "description": "A mobile operations dashboard featuring a regional map, statistics, and a grid menu for various business functions.",
-  "requestFramePermissions": []
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

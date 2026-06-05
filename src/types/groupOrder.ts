@@ -21,12 +21,12 @@ export interface GroupOrderRecord {
 }
 
 export interface DeliveryManagerRecord {
-  id: string;
+  id: string | number;
   name: string;
   phone: string;
   level: string;
   city: string;
-  count: number;
+  county?: string;
   grid?: string;
   company?: string;
   jurisdiction?: string[];

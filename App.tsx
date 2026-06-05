@@ -11,11 +11,13 @@ import GroupOrderDetail from './components/GroupOrderDetail';
 import GroupTaskDetail from './components/GroupTaskDetail';
 import ComplaintSupport from './components/ComplaintSupport';
 import ComplaintDetail from './components/ComplaintDetail';
+import QualityCheckRemoteDisposal from './components/QualityCheckRemoteDisposal';
+import AIAssistant from './components/AIAssistant';
 import { generateGroupOrderData, generateGroupOrderTaskData, generateDeliveryManagerData } from './src/utils/groupOrderData';
 import { generateComplaintData } from './src/utils/complaintData';
 
 const App: React.FC = () => {
-  const [currentView, setCurrentView] = useState<'HOME' | 'IMS_QUERY' | 'GROUP_ORDER' | 'GROUP_ORDER_DETAIL' | 'GROUP_TASK_DETAIL' | 'COMPLAINT_SUPPORT' | 'COMPLAINT_DETAIL'>('HOME');
+  const [currentView, setCurrentView] = useState<'HOME' | 'IMS_QUERY' | 'GROUP_ORDER' | 'GROUP_ORDER_DETAIL' | 'GROUP_TASK_DETAIL' | 'COMPLAINT_SUPPORT' | 'COMPLAINT_DETAIL' | 'REMOTE_DISPOSAL'>('HOME');
   const [selectedId, setSelectedId] = useState<string>('');
   const [favoritedOrders, setFavoritedOrders] = useState<string[]>([]);
 
@@ -38,6 +40,8 @@ const App: React.FC = () => {
       setCurrentView('GROUP_ORDER');
     } else if (label === '投诉支撑' || label === '投诉' || label === '投诉跟踪反馈') {
       setCurrentView('COMPLAINT_SUPPORT');
+    } else if (label === '质差远程处置') {
+      setCurrentView('REMOTE_DISPOSAL');
     }
     // Handle other menu items if needed
   };
@@ -70,6 +74,7 @@ const App: React.FC = () => {
       case 'GROUP_TASK_DETAIL': return '任务详情';
       case 'COMPLAINT_SUPPORT': return '投诉支撑';
       case 'COMPLAINT_DETAIL': return '投诉详情';
+      case 'REMOTE_DISPOSAL': return '质差远程处置';
       default: return '首页';
     }
   };
@@ -208,7 +213,16 @@ const App: React.FC = () => {
               />
             </div>
           )}
+
+          {currentView === 'REMOTE_DISPOSAL' && (
+            <div className="absolute inset-0 z-30 bg-gray-50 flex flex-col overflow-y-auto">
+              <QualityCheckRemoteDisposal />
+            </div>
+          )}
         </div>
+
+        {/* AI Assistant Floating Button & Chat - Moved here to cover header/status bar */}
+        <AIAssistant />
 
       </div>
     </div>

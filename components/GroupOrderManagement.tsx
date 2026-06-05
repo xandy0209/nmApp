@@ -80,7 +80,7 @@ const GroupOrderManagement: React.FC<GroupOrderManagementProps> = ({ onItemClick
   const [managerCountyFilter, setManagerCountyFilter] = useState('');
   const [localOrders, setLocalOrders] = useState(orders);
   const [isManagerModalOpen, setIsManagerModalOpen] = useState(false);
-  const [editingManagerId, setEditingManagerId] = useState<number | null>(null);
+  const [editingManagerId, setEditingManagerId] = useState<string | number | null>(null);
   const [newManagerForm, setNewManagerForm] = useState<Partial<DeliveryManagerRecord>>({
     name: '',
     phone: '',
@@ -198,7 +198,7 @@ const GroupOrderManagement: React.FC<GroupOrderManagementProps> = ({ onItemClick
     setIsManagerModalOpen(true);
   };
 
-  const handleDeleteManager = (id: number) => {
+  const handleDeleteManager = (id: string | number) => {
     if (window.confirm('确认删除该交付经理吗？')) {
       setManagers(prev => prev.filter(m => m.id !== id));
     }

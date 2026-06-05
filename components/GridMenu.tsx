@@ -32,7 +32,7 @@ const MenuItem: React.FC<MenuItemProps> = ({ icon, label, colorClass, onClick, d
     >
       <div className={`w-10 h-10 ${colorClass} rounded-lg flex items-center justify-center`}>
          {/* Using cloneElement or just passing explicit size to icon */}
-         {React.cloneElement(icon as React.ReactElement, { size: 24 })}
+         {React.cloneElement(icon as React.ReactElement<any>, { size: 24 })}
       </div>
       <span className="text-gray-700 text-center leading-tight" style={{ fontSize: '14px' }}>{label}</span>
     </div>
@@ -63,6 +63,7 @@ const GridMenu: React.FC<GridMenuProps> = ({ onMenuClick }) => {
     
     { label: "团单管理", icon: <Layers />, color: "text-red-400 bg-red-50" },
     { label: "投诉支撑", icon: <MessageSquare />, color: "text-orange-400 bg-orange-50" },
+    { label: "质差远程处置", icon: <Stethoscope />, color: "text-blue-500 bg-blue-50" },
   ];
 
   return (
