@@ -29,6 +29,7 @@ const AIAssistant: React.FC = () => {
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isListening, setIsListening] = useState(false);
+  const [showAttachmentMenu, setShowAttachmentMenu] = useState(false);
   const [attachments, setAttachments] = useState<File[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const chatInputRef = useRef<HTMLInputElement>(null);
@@ -640,38 +641,38 @@ const AIAssistant: React.FC = () => {
                             key={i}
                             initial={{ opacity: 0, y: 10, scale: 0.95 }}
                             animate={{ opacity: 1, y: 0, scale: 1 }}
-                            className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                            className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}
                           >
-                            <div className={`max-w-[85%] flex gap-2 ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
-                              <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
+                            <div className={`flex items-center gap-2 mb-1 ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
+                              <div className={`w-6 h-6 rounded-lg flex items-center justify-center shrink-0 ${
                                 msg.role === 'user' ? 'bg-[#2ea2e6] text-white' : 'bg-white border border-gray-200 text-gray-500'
                               }`}>
-                                {msg.role === 'user' ? <MessageCircle size={14} /> : <Bot size={14} />}
+                                {msg.role === 'user' ? <MessageCircle size={12} /> : <Bot size={12} />}
                               </div>
-                              <div className={`p-3 rounded-2xl text-sm shadow-sm markdown-content ${
-                                msg.role === 'user' 
-                                  ? 'bg-[#2ea2e6] text-white rounded-tr-none' 
-                                  : 'bg-white text-gray-700 border border-gray-100 rounded-tl-none pr-10'
-                              }`}>
-                                <Markdown>{msg.content}</Markdown>
-                                <div className={`text-[10px] mt-2 opacity-50 ${msg.role === 'user' ? 'text-right text-white' : 'text-left text-gray-400'}`}>
-                                  {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                </div>
-                              </div>
+                              <span className="text-[10px] text-gray-400">
+                                {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                              </span>
+                            </div>
+                            <div className={`max-w-[95%] p-3 rounded-2xl text-sm shadow-sm markdown-content ${
+                              msg.role === 'user' 
+                                ? 'bg-[#2ea2e6] text-white rounded-tr-none' 
+                                : 'bg-white text-gray-700 border border-gray-100 rounded-tl-none'
+                            }`}>
+                              <Markdown>{msg.content}</Markdown>
                             </div>
                           </motion.div>
                         ))}
                         {isLoading && (
-                          <div className="flex justify-start">
-                            <div className="flex gap-2">
-                              <div className="w-8 h-8 rounded-lg bg-white border border-gray-200 text-gray-500 flex items-center justify-center">
-                                <Bot size={14} className="animate-pulse" />
+                          <div className="flex flex-col items-start">
+                            <div className="flex items-center gap-2 mb-1">
+                              <div className="w-6 h-6 rounded-lg bg-white border border-gray-200 text-gray-500 flex items-center justify-center">
+                                <Bot size={12} className="animate-pulse" />
                               </div>
-                              <div className="bg-white border border-gray-100 p-3 rounded-2xl rounded-tl-none flex gap-1 items-center shadow-sm">
-                                <div className="w-1.5 h-1.5 bg-gray-300 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
-                                <div className="w-1.5 h-1.5 bg-gray-300 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
-                                <div className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce"></div>
-                              </div>
+                            </div>
+                            <div className="bg-white border border-gray-100 p-3 rounded-2xl rounded-tl-none flex gap-1 items-center shadow-sm">
+                              <div className="w-1.5 h-1.5 bg-gray-300 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+                              <div className="w-1.5 h-1.5 bg-gray-300 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+                              <div className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce"></div>
                             </div>
                           </div>
                         )}
@@ -697,21 +698,67 @@ const AIAssistant: React.FC = () => {
                     )}
                     
                     <div 
-                      onClick={() => chatInputRef.current?.focus()}
-                      className="flex items-center gap-2 bg-white border border-gray-200 p-1.5 px-3 rounded-[28px] shadow-sm transition-all focus-within:border-[#2ea2e6] focus-within:ring-1 focus-within:ring-[#2ea2e6]/20 cursor-text"
+                      onClick={() => {
+                        chatInputRef.current?.focus();
+                        setShowAttachmentMenu(false);
+                      }}
+                      className="flex items-center gap-2 bg-white border border-gray-200 p-1.5 px-3 rounded-[28px] shadow-sm transition-all focus-within:border-[#2ea2e6] focus-within:ring-1 focus-within:ring-[#2ea2e6]/20 cursor-text relative"
                     >
-                      <button 
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (fileInputRef.current) {
-                            fileInputRef.current.accept = "image/*";
-                            fileInputRef.current.click();
-                          }
-                        }}
-                        className="p-2 text-gray-800 hover:bg-gray-100 rounded-full transition-colors flex-shrink-0"
-                      >
-                        <Camera size={24} strokeWidth={1.5} />
-                      </button>
+                      <div className="relative">
+                        <AnimatePresence>
+                          {showAttachmentMenu && (
+                            <motion.div
+                              initial={{ opacity: 0, y: 10, scale: 0.9 }}
+                              animate={{ opacity: 1, y: 0, scale: 1 }}
+                              exit={{ opacity: 0, y: 10, scale: 0.9 }}
+                              className="absolute bottom-full left-0 mb-3 bg-white rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.15)] border border-gray-100 p-2 min-w-[120px] z-50 overflow-hidden"
+                            >
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  if (fileInputRef.current) {
+                                    fileInputRef.current.accept = "image/*";
+                                    fileInputRef.current.click();
+                                  }
+                                  setShowAttachmentMenu(false);
+                                }}
+                                className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-gray-50 rounded-xl transition-colors text-sm text-gray-700"
+                              >
+                                <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-500 flex items-center justify-center">
+                                  <ImageIcon size={18} />
+                                </div>
+                                <span>图片</span>
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  if (fileInputRef.current) {
+                                    fileInputRef.current.accept = "*/*";
+                                    fileInputRef.current.click();
+                                  }
+                                  setShowAttachmentMenu(false);
+                                }}
+                                className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-gray-50 rounded-xl transition-colors text-sm text-gray-700"
+                              >
+                                <div className="w-8 h-8 rounded-lg bg-orange-50 text-orange-500 flex items-center justify-center">
+                                  <FileIcon size={18} />
+                                </div>
+                                <span>文件</span>
+                              </button>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                        
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setShowAttachmentMenu(!showAttachmentMenu);
+                          }}
+                          className={`p-2 rounded-full transition-colors flex-shrink-0 ${showAttachmentMenu ? 'text-[#2ea2e6] bg-blue-50' : 'text-gray-800 hover:bg-gray-100'}`}
+                        >
+                          <Paperclip size={24} strokeWidth={1.5} />
+                        </button>
+                      </div>
 
                       <input
                         ref={chatInputRef}
@@ -751,11 +798,16 @@ const AIAssistant: React.FC = () => {
                         <button 
                           onClick={(e) => {
                             e.stopPropagation();
-                            fileInputRef.current?.click();
+                            handleSendMessage();
                           }}
-                          className="p-1.5 border-2 border-gray-800 text-gray-800 rounded-full hover:bg-gray-100 transition-all flex-shrink-0"
+                          disabled={!inputValue.trim() && attachments.length === 0}
+                          className={`p-2 rounded-full flex items-center justify-center transition-all active:scale-95 flex-shrink-0 ${
+                            inputValue.trim() || attachments.length > 0
+                              ? 'bg-[#2ea2e6] text-white shadow-md'
+                              : 'text-gray-400'
+                          }`}
                         >
-                          <Plus size={18} strokeWidth={2} />
+                          <Send size={18} />
                         </button>
                       </div>
 
